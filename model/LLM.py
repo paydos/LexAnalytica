@@ -59,23 +59,6 @@ class ExpertAgent:
         else:
             raise "The chat_instance had an error"
 
-    def augment_prompt(self, human_msg: HumanMessage):
-        """
-        Enrich user prompt by adding RAG content to the user's input
-        """
-        results = vectorstore.similarity_search(human_msg.content, k=3)
-        source_knowledge = "\n".join([x.page_content for x in results])
-
-        augmented_prompt = f"""Using the contexts below, answer the query.
-        
-        Contexts:
-        {source_knowledge}
-        
-        Query: {query}
-        """
-
-    return augmented_prompt
-
     def chat(self, message):
         # Create a human message
         human_msg = HumanMessage(content=message)
