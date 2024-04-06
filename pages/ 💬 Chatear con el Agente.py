@@ -46,10 +46,8 @@ with st.sidebar:
                 st.error(f"La memoria no ha sido reseteada:\n {e}", icon="🧠")
         else:
             st.error("La memoria no se puede resetear porque no has creado un Agente")
-
-
 # Prints the whole convo
-if st.session_state.ExpertAgent:
+if isinstance(st.session_state.ExpertAgent, ExpertAgent):
     if st.session_state.ExpertAgent.chat_history:
         for message in st.session_state.ExpertAgent.chat_history[2:]:
             if message.type == "human":
