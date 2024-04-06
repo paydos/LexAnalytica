@@ -1,0 +1,3 @@
+OPENAI_API_KEY = "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"
+MODEL_NAME = "gpt-4-turbo-preview"
+PINECONE_API_KEY = "251511d1-6f9d-477d-96be-785aa6249b0c"

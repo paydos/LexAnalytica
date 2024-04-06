@@ -12,6 +12,8 @@ pinecone-client = "*"
 datasets = "*"
 yaspin = "*"
 tqdm = "*"
+streamlit = "*"
+pypdf2 = "*"
 
 [dev-packages]
 ipykernel = "*"
