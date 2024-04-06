@@ -2,7 +2,7 @@ from time import sleep
 
 import streamlit as st
 
-from constants import OPENAI_API_KEY, MODEL_NAME
+from constants import MODEL_NAME, OPENAI_API_KEY
 from model import ExpertAgent
 
 # Set up Session State
@@ -82,8 +82,8 @@ def main():
             try:
                 with st.spinner("Creando Agente"):
                     st.session_state.ExpertAgent = ExpertAgent(
-                        api_key=OPENAI_API_KEY,
-                        model_name=MODEL_NAME,
+                        api_key=st.secrets["OPENAI_API_KEY"],
+                        model_name=st.secrets["MODEL_NAME"],
                         agent_description=st.session_state.ExpertAgentInstructions,
                         temperature=st.session_state.ExpertAgentTemperature,
                     )
