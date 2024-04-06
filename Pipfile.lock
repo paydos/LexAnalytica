@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a8f9786ba95d11458ff9113726d2876b34f5f3c79f47680cd4b548e3082d7572"
+            "sha256": "fc3d4554d4574cbc4a3c77a3ad2625db71c9f2dd17121c6e68e4e151518d922b"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -1230,6 +1230,14 @@
             "markers": "python_version >= '3.7'",
             "version": "==2.17.2"
         },
+        "pypdf": {
+            "hashes": [
+                "sha256:01c3257ec908676efd60a4537e525b89d48e0852bc92b4e0aa4cc646feda17cc",
+                "sha256:16cac912a05200099cef3f347c4c7e0aaf0a6d027603b8f9a973c0ea500dff89"
+            ],
+            "index": "pypi",
+            "version": "==4.1.0"
+        },
         "pypdf2": {
             "hashes": [
                 "sha256:a74408f69ba6271f71b9352ef4ed03dc53a31aa404d29b5d31f53bfecfee1440",
@@ -1624,6 +1632,14 @@
             ],
             "index": "pypi",
             "version": "==1.33.0"
+        },
+        "streamlit-server-state": {
+            "hashes": [
+                "sha256:528bf795beaecb51d90156fe153326e22ffcd3bf955673e8871de1b6ac67a7ea",
+                "sha256:b4b6d6c0801626f1bcf94a010cf8be67d31ceb51ad762b1735ea7a1f6a487cf7"
+            ],
+            "index": "pypi",
+            "version": "==0.17.1"
         },
         "tenacity": {
             "hashes": [

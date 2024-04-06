@@ -1,8 +1,29 @@
 from time import sleep
 
 import streamlit as st
+from streamlit_server_state import server_state, server_state_lock
 
 from model.LLM import ExpertAgent
+
+# Set up Session State
+if "ExpertAgent" not in st.session_state:
+    st.session_state["ExpertAgent"] = None
+
+if "ExpertAgentInstructions" not in st.session_state:
+    st.session_state["ExpertAgentInstructions"] = ""
+
+if "ExpertAgentTemperature" not in st.session_state:
+    st.session_state["ExpertAgentTemperature"] = None
+
+if "DocumentUploader" not in st.session_state:
+    st.session_state["DocumentUploader"] = None
+
+if "index_name" not in st.session_state:
+    st.session_state["index_name"] = None
+
+with server_state_lock["documents"]:
+    if "documents" not in server_state:
+        server_state.documents = []
 
 st.sidebar.title("Ajustes del Chat")
 
