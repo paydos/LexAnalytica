@@ -34,6 +34,13 @@ st.set_page_config(
 
 st.title("Documentos del Agente")
 
+
+with st.sidebar:
+    if server_state.documents:
+        st.sidebar.markdown("### Documentos subidos:")
+        for document in server_state.documents:
+            st.sidebar.markdown(f"📄 `{document}`")
+
 st.markdown("Sube aquí tus documentos y comprueba los que ya están subidos")
 
 st.session_state.DocumentUploader = DocumentUploader(
@@ -68,15 +75,3 @@ if st.button("Subir documentos al Vector Store"):
         st.warning("No hay ningún documento añadido para subirlo")
 
 # Display the names of uploaded documents from server_state.documents list using markdown and bullet points
-if server_state.documents:
-    st.markdown("### Documentos subidos:")
-    col1, col2 = st.columns(2)
-    half = len(server_state.documents) // 2
-    with col1:
-        for document in server_state.documents[:half]:
-            st.markdown(f"📄 `{document}`")
-    with col2:
-        for document in server_state.documents[half:]:
-            st.markdown(f"📄 `{document}`")
-else:
-    st.write("No hay documentos subidos aún.")
