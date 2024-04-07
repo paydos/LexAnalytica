@@ -31,16 +31,15 @@ st.set_page_config(
     layout="centered",
     initial_sidebar_state="expanded",
 )
-# Display the names of uploaded documents from server_state.documents list using markdown and bullet points
-with st.sidebar:
-    if server_state.documents:
-        st.sidebar.subheader("### Documentos subidos:")
-        for document in server_state.documents:
-            st.sidebar.markdown(f"📄 `{document}`")
-    else:
-        st.sidebar.markdown("No hay documentos subidos aún.")
 
 st.title("Documentos del Agente")
+
+
+with st.sidebar:
+    if server_state.documents:
+        st.sidebar.markdown("### Documentos subidos:")
+        for document in server_state.documents:
+            st.sidebar.markdown(f"📄 `{document}`")
 
 st.markdown("Sube aquí tus documentos y comprueba los que ya están subidos")
 
@@ -74,3 +73,5 @@ if st.button("Subir documentos al Vector Store"):
             )
     else:
         st.warning("No hay ningún documento añadido para subirlo")
+
+# Display the names of uploaded documents from server_state.documents list using markdown and bullet points
