@@ -1,5 +1,10 @@
+import hmac
+
 import streamlit as st
 from streamlit_server_state import server_state, server_state_lock
+
+from utils.acknowledge import show_creator_acknowledgement
+from utils.pwd import check_password
 
 # Set up Session State
 if "ExpertAgent" not in st.session_state:
@@ -18,15 +23,21 @@ with server_state_lock["documents"]:
     if "documents" not in server_state:
         server_state.documents = []
 
-
 st.set_page_config(
     page_title="Menú principal",
     page_icon="👋",
     layout="centered",
     initial_sidebar_state="expanded",
 )
+# streamlit_app.py1
 
 st.write("# Bienvenido al Agente Experto 👋")
+
+if not check_password():
+
+    st.stop()  # Do not continue if check_password is not True.
+
+
 st.markdown("Antes de empezar leete esto :)")
 st.title("Guía de Uso del Agente Experto")
 st.markdown(
@@ -60,3 +71,5 @@ Los ajustes que podeis tocar son:
             
             """
 )
+
+show_creator_acknowledgement()

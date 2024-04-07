@@ -1,7 +1,9 @@
 import streamlit as st
 from streamlit_server_state import server_state, server_state_lock
 
+from utils.acknowledge import show_creator_acknowledgement
 from utils.pdf2txt import convert_to_text
+from utils.pwd import check_password
 from utils.vector_store_uploader import DocumentUploader
 
 # Set up Session State
@@ -33,6 +35,8 @@ st.set_page_config(
 )
 
 st.title("Documentos del Agente")
+if not check_password():
+    st.stop()  # Do not continue if check_password is not True.
 
 
 with st.sidebar:
@@ -41,19 +45,25 @@ with st.sidebar:
         for document in server_state.documents:
             st.sidebar.markdown(f"📄 `{document}`")
 
+    st.sidebar.subheader("En caso de que haya un error...")
+    if st.button("Reiniciar servicio de subida"):
+        st.rerun()
+
 st.markdown("Sube aquí tus documentos y comprueba los que ya están subidos")
 
-st.session_state.DocumentUploader = DocumentUploader(
-    openai_api_key=st.secrets["OPENAI_API_KEY"],
-    openai_embeddings_model="text-embedding-3-large",
-    pinecone_api_key=st.secrets["PINECONE_API_KEY"],
-    index_name=st.session_state.index_name,
-)
 
 uploaded_files = st.file_uploader("Sube aqui los PDFs", accept_multiple_files=True)
 
 
 if st.button("Subir documentos al Vector Store"):
+
+    with st.spinner("Cargando Vector Store"):
+        st.session_state.DocumentUploader = DocumentUploader(
+            openai_api_key=st.secrets["OPENAI_API_KEY"],
+            openai_embeddings_model="text-embedding-3-large",
+            pinecone_api_key=st.secrets["PINECONE_API_KEY"],
+            index_name=st.session_state.index_name,
+        )
     if len(uploaded_files) > 0:
         with server_state_lock["documents"]:
             # Filter out files that are already in server_state.documents
@@ -66,7 +76,10 @@ if st.button("Subir documentos al Vector Store"):
                     st.warning(f"El archivo '{file.name}' ya está subido.")
         if new_files:  # Check if there are any new files to upload after filtering
             with st.spinner("Subiendo documentos"):
-                st.session_state.DocumentUploader.upload_documents(uploaded_files)
+                try:
+                    st.session_state.DocumentUploader.upload_documents(uploaded_files)
+                except Exception as e:
+                    st.error(f"Ha habido un error subiendo los documento(s):\n{e}")
         else:
             st.warning(
                 "Todos los documentos seleccionados ya han sido subidos anteriormente."

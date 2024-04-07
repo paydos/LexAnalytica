@@ -4,6 +4,8 @@ import streamlit as st
 from streamlit_server_state import server_state, server_state_lock
 
 from model.LLM import ExpertAgent
+from utils.acknowledge import show_creator_acknowledgement
+from utils.pwd import check_password
 
 # Set up Session State
 if "ExpertAgent" not in st.session_state:
@@ -24,6 +26,12 @@ if "index_name" not in st.session_state:
 with server_state_lock["documents"]:
     if "documents" not in server_state:
         server_state.documents = []
+
+
+st.title("Chat con el Agente Experto")
+if not check_password():
+    st.stop()  # Do not continue if check_password is not True.
+
 
 st.sidebar.title("Ajustes del Chat")
 
@@ -56,6 +64,7 @@ if isinstance(st.session_state.ExpertAgent, ExpertAgent):
             else:
                 with st.chat_message(message.content, avatar="🤖"):
                     st.markdown(message.content)
+
     user_input = st.chat_input("Escribe aquí tu consulta al agente experto")
 
     if user_input:

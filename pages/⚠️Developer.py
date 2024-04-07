@@ -1,6 +1,14 @@
 import streamlit as st
 from streamlit_server_state import server_state, server_state_lock
 
+from utils.acknowledge import show_creator_acknowledgement
+from utils.pwd import check_password
+
+st.title("Ajustes de Desarrollador")
+if not check_password():
+    st.stop()  # Do not continue if check_password is not True.
+
+
 st.warning(
     "Esta página no está destinada para uso general. Es solo para configuración interna."
 )
@@ -28,3 +36,5 @@ if st.button("Resetear documentos subidos"):
     with server_state_lock["documents"]:
         server_state.documents = []
         st.success("Documentos del Vector Store reseteados.")
+
+show_creator_acknowledgement()

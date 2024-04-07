@@ -2,6 +2,8 @@ import streamlit as st
 from streamlit_server_state import server_state, server_state_lock
 
 from model.LLM import ExpertAgent
+from utils.acknowledge import show_creator_acknowledgement
+from utils.pwd import check_password
 
 # Set up Session State
 if "ExpertAgent" not in st.session_state:
@@ -30,7 +32,11 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+
 st.title("Ajustes del Agente Experto")
+
+if not check_password():
+    st.stop()  # Do not continue if check_password is not True.
 
 
 st.markdown(
@@ -69,14 +75,21 @@ st.markdown(
     "Una vez ya tengas todas las configuraciones, haz click en 'Generar' para poder empezar a chatear con nuestro Agente"
 )
 if st.button("Generar"):
-    try:
-        with st.spinner("Creando Agente"):
-            st.session_state.ExpertAgent = ExpertAgent(
-                api_key=st.secrets["OPENAI_API_KEY"],
-                model_name=st.secrets["MODEL_NAME"],
-                agent_description=st.session_state.ExpertAgentInstructions,
-                temperature=st.session_state.ExpertAgentTemperature,
-            )
-        st.success("El Agente se ha creado correctamente")
-    except Exception as e:
-        st.error(f"No se ha podido crear el Agente: \n{e}", icon="💀")
+    if st.session_state.ExpertAgentTemperature is not None:
+        try:
+            with st.spinner("Creando Agente"):
+                st.session_state.ExpertAgent = ExpertAgent(
+                    api_key=st.secrets["OPENAI_API_KEY"],
+                    model_name=st.secrets["MODEL_NAME"],
+                    agent_description=st.session_state.ExpertAgentInstructions,
+                    temperature=st.session_state.ExpertAgentTemperature,
+                )
+            st.success("El Agente se ha creado correctamente")
+        except Exception as e:
+            st.error(f"No se ha podido crear el Agente: \n{e}", icon="💀")
+    else:
+        st.error(
+            f"La temperatura del agente es {st.session_state.ExpertAgentTemperature}. No te olvides de hacer click en **Configurar temperatura**"
+        )
+
+show_creator_acknowledgement()
