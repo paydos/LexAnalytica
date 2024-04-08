@@ -1,11 +1,15 @@
+from typing import List
+
 from langchain.schema import AIMessage, HumanMessage
-from langchain.vectorstores import Pinecone
 from langchain_openai import ChatOpenAI
+
+from model import FusionRAG
 
 
 class ExpertAgent:
     def __init__(
         self,
+        fusion_rag: FusionRAG = None,
         api_key: str = None,
         model_name: str = "gpt-4-turbo-preview",
         agent_description: str = " ",
@@ -14,9 +18,11 @@ class ExpertAgent:
         self.api_key = api_key
         self.model_name = model_name
         self.chat_history = None
+        self.enhanced_chat_history = None
         self.chat_instance = None
         self.agent_description = agent_description
         self.temperature = temperature
+        self.fusion_rag = fusion_rag
 
         # Creates an instance of the ChatOpenAI class
         self._chat_instance()
@@ -33,13 +39,27 @@ class ExpertAgent:
             )
             self._agent_description()
 
+    def _enhanced_chat_history(self, human: HumanMessage = None, gpt: AIMessage = None):
+        if self.enhanced_chat_history is None:
+            self.enhanced_chat_history = []
+
+        if human is not None:
+            if human.content == "exit":
+                exit("User exited the chat")
+            self.enhanced_chat_history.append(human)
+
+        if gpt is not None:
+            self.enhanced_chat_history.append(gpt)
+
     def _chat_history(self, human: HumanMessage = None, gpt: AIMessage = None):
+
         if self.chat_history is None:
             self.chat_history = []
         if human is not None:
             if human.content == "exit":
                 exit("User exited the chat")
             self.chat_history.append(human)
+
         if gpt is not None:
             self.chat_history.append(gpt)
 
@@ -55,18 +75,43 @@ class ExpertAgent:
         """
 
         if self.chat_instance:
-            self.chat(agent_description)
+            self.chat(agent_description, rag=False)
         else:
             raise "The chat_instance had an error"
 
-    def chat(self, message):
-        # Create a human message
-        human_msg = HumanMessage(content=message)
-        self._chat_history(human_msg)
+    def _augment_prompt(self, human_msg: str):
+        documents = self.fusion_rag.consult_vectorstore(human_msg, how_many=3)
+        documents_processed = "\n".join([x.page_content for x in documents])
 
-        ai_message_content = self.chat_instance.invoke(self.chat_history)
+        augmented_prompt = f"""
+        Responde a la pregunta basandote tan sólo usando el siguiente contexto.
+        Pregunta:{human_msg}
+
+        Contexto:
+        {documents_processed}
+        """
+        print(f"\n\n{augmented_prompt}\n\n")
+        return augmented_prompt
+
+    def chat(self, message, rag: bool = True):
+        # Create a human message
+        if rag:
+            augmented_message = self._augment_prompt(message)
+            augmented_message = HumanMessage(content=augmented_message)
+
+            message = HumanMessage(content=message)
+
+            self._enhanced_chat_history(augmented_message)
+            self._chat_history(message)
+        else:
+            message = HumanMessage(content=message)
+            self._chat_history(message)
+            self._enhanced_chat_history(message)
+
+        ai_message_content = self.chat_instance.invoke(self.enhanced_chat_history)
         ai_message = AIMessage(content=ai_message_content.content)
 
         self.ai_message = ai_message
 
         self._chat_history(ai_message)
+        self._enhanced_chat_history(ai_message)

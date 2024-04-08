@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "fc3d4554d4574cbc4a3c77a3ad2625db71c9f2dd17121c6e68e4e151518d922b"
+            "sha256": "6f909a4d2639bc233cdbcead4563d706bafcd6cbd7cdb05064348d0ba650b95e"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -592,6 +592,14 @@
             ],
             "index": "pypi",
             "version": "==0.1.1"
+        },
+        "langchain-pinecone": {
+            "hashes": [
+                "sha256:5584a56b4208f3a30917c6698a27ecb459c192db0b2374d515887b507763ff20",
+                "sha256:aa6c9925727f509b781c791184f5c2f8bc15030c0ad20f4b52b2698207934b9d"
+            ],
+            "index": "pypi",
+            "version": "==0.0.3"
         },
         "langchain-text-splitters": {
             "hashes": [
@@ -1232,11 +1240,11 @@
         },
         "pypdf": {
             "hashes": [
-                "sha256:01c3257ec908676efd60a4537e525b89d48e0852bc92b4e0aa4cc646feda17cc",
-                "sha256:16cac912a05200099cef3f347c4c7e0aaf0a6d027603b8f9a973c0ea500dff89"
+                "sha256:dc035581664e0ad717e3492acebc1a5fc23dba759e788e3d4a9fc9b1a32e72c1",
+                "sha256:fe63f3f7d1dcda1c9374421a94c1bba6c6f8c4a62173a59b64ffd52058f846b1"
             ],
             "index": "pypi",
-            "version": "==4.1.0"
+            "version": "==4.2.0"
         },
         "pypdf2": {
             "hashes": [

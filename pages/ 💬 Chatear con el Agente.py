@@ -3,7 +3,7 @@ from time import sleep
 import streamlit as st
 from streamlit_server_state import server_state, server_state_lock
 
-from model.LLM import ExpertAgent
+from model import ExpertAgent
 from utils.acknowledge import show_creator_acknowledgement
 from utils.pwd import check_password
 

@@ -1,6 +1,5 @@
 import binascii
 import io
-import json
 from typing import List
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -12,8 +11,10 @@ def convert_to_text(pdf_list: List[UploadedFile]) -> str:
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000, chunk_overlap=100, length_function=len
     )
+    from tqdm import tqdm
+
     docs = []
-    for doc in pdf_list:
+    for doc in tqdm(pdf_list, desc="Converting PDFs to text"):
         pdf_bytes_io = io.BytesIO(doc.read())
         doc_name = doc.name
 
@@ -24,7 +25,7 @@ def convert_to_text(pdf_list: List[UploadedFile]) -> str:
 
         text_chunks = []
 
-        for page in pdf_doc.pages:
+        for page in tqdm(pdf_doc.pages, desc=f"Processing {doc_name}", leave=False):
             try:
                 page_text = page.extract_text()
                 if page_text:

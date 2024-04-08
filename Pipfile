@@ -16,6 +16,7 @@ streamlit = "*"
 pypdf2 = "*"
 pypdf = "*"
 streamlit-server-state = "*"
+langchain-pinecone = "*"
 
 [dev-packages]
 ipykernel = "*"

@@ -1,13 +1,17 @@
 import streamlit as st
 from streamlit_server_state import server_state, server_state_lock
 
-from model.LLM import ExpertAgent
+from model import ExpertAgent, FusionRAG
 from utils.acknowledge import show_creator_acknowledgement
 from utils.pwd import check_password
 
 # Set up Session State
 if "ExpertAgent" not in st.session_state:
     st.session_state["ExpertAgent"] = None
+
+# Set up Session State
+if "ExpertAgentFusionRAG" not in st.session_state:
+    st.session_state["ExpertAgentFusionRAG"] = None
 
 if "ExpertAgentInstructions" not in st.session_state:
     st.session_state["ExpertAgentInstructions"] = ""
@@ -59,6 +63,23 @@ with st.form("agent_instructions", border=False):
             st.session_state.ExpertAgentInstructions = agent_instructions
             st.warning("El Agente no tiene descripción")
 
+st.header("Configuración del FusionRAG")
+st.markdown("Configura cómo se va a comportar el FusionRAG")
+
+if st.button("Crear RAG"):
+    try:
+        with st.spinner("Creando Agente"):
+            # TODO add updated arguments
+            st.session_state.FusionRAG = FusionRAG(
+                openai_api_key=st.secrets["OPENAI_API_KEY"],
+                pinecone_api_key=st.secrets["PINECONE_API_KEY"],
+                index_name="law-documents",
+            )
+        st.success("El RAG se ha creado correctamente")
+    except Exception as e:
+        st.error(f"No se ha podido crear el RAG: \n{e}", icon="💀")
+
+
 st.header("Temperatura del Agente")
 st.markdown(
     "La temperatura es un parametro en los LLM donde defines cómo de random quieres que sea la respuesta. Cuanto más alto, más probabilidad de que la respuesta no diste mucho de la de un esquizofrénico. Podeis probar a ver que tal funciona. Para que os hagais una idea, el chatGPT tiene 0.7"
@@ -78,18 +99,21 @@ if st.button("Generar"):
     if st.session_state.ExpertAgentTemperature is not None:
         try:
             with st.spinner("Creando Agente"):
+                # TODO add updated arguments
                 st.session_state.ExpertAgent = ExpertAgent(
                     api_key=st.secrets["OPENAI_API_KEY"],
                     model_name=st.secrets["MODEL_NAME"],
                     agent_description=st.session_state.ExpertAgentInstructions,
                     temperature=st.session_state.ExpertAgentTemperature,
+                    fusion_rag=st.session_state.FusionRAG,
                 )
             st.success("El Agente se ha creado correctamente")
         except Exception as e:
-            st.error(f"No se ha podido crear el Agente: \n{e}", icon="💀")
+            st.error(f"Error al crear el Agente: {e}", icon="🚨")
     else:
         st.error(
             f"La temperatura del agente es {st.session_state.ExpertAgentTemperature}. No te olvides de hacer click en **Configurar temperatura**"
         )
+
 
 show_creator_acknowledgement()
