@@ -1,11 +1,10 @@
+from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
 import pinecone
-import streamlit as st
-from langchain.schema.output_parser import StrOutputParser
-from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
+from langchain.schema import AIMessage, HumanMessage
 from langchain_core.documents.base import Document
-from langchain_openai import OpenAIEmbeddings
+from langchain_openai import ChatOpenAI
 from langchain_pinecone import Pinecone
 
 from utils.vector_store_uploader import DocumentUploader
@@ -35,7 +34,8 @@ class FusionRAG(DocumentUploader):
         openai_embeddings_model: str = "text-embedding-3-large",
         context: str = " ",
         fusionRAG_branches: int = 1,
-        fusionRAG_queries: List[str] = None,
+        fusionRAG_generated_queries: List[str] = None,
+        results_per_branch: int = 1,
     ) -> None:
         super().__init__(
             pinecone_api_key=pinecone_api_key,
@@ -44,9 +44,13 @@ class FusionRAG(DocumentUploader):
             openai_embeddings_model=openai_embeddings_model,
         )
         self.vector_store = None
-        self.context = context
-        self.fusionRAG_branches = fusionRAG_branches
-        self.fusionRAG_queries = fusionRAG_queries
+        self.fusionRAGcontext = context  # Explains "You are an AI Assistant to generate phrases to optimise the search using RAG in a vector store"
+        self.fusionRAG_branches = (
+            fusionRAG_branches  # "How many fusionRAG branches will be created"
+        )
+        self.fusionRAG_generated_queries = fusionRAG_generated_queries
+
+        self.results_per_branch = results_per_branch
 
         self._create_embeddings_model()
         self._vectorstore_instances()
@@ -65,9 +69,44 @@ class FusionRAG(DocumentUploader):
             self.Index, self.embeddings_model, self.text_field
         )
 
-    def generate_queries(self, input_query):
+    def _consult_vectorstore_threaded(self, query: str) -> List[Document]:
+        return self.consult_vectorstore(query, self.results_per_branch)
 
-        pass
+    def fusion_rag(self, chat_completions: ChatOpenAI, human_msg: str):
+
+        # Template to generate vectorstore queries
+        vectorstore_fusionRAG_query = HumanMessage(
+            content=f"""
+        AI Assistant purpose: {self.fusionRAGcontext}
+                
+        Number of phrases for RAG querying: {self.fusionRAG_branches}. Return each query in one line to split them.
+        
+        User question: {human_msg}
+        """
+        )
+
+        response_content = chat_completions.invoke(
+            vectorstore_fusionRAG_query.content
+        ).content
+
+        # Generated queries
+        self.fusionRAG_generated_queries = response_content.strip().split("\n")
+
+        vectorstore_results = []
+
+        # TODO Does this work??
+        with ThreadPoolExecutor() as executor:
+            futures = [
+                executor.submit(self._consult_vectorstore_threaded, query)
+                for query in self.fusionRAG_generated_queries
+            ]
+            for i, future in enumerate(futures):
+                vectorstore_results.extend(future.result())
+
+        with open("query_gener.txt", "w") as file:
+            for result in self.fusionRAG_generated_queries:
+                file.write(f"{result}\n")
+        return vectorstore_results
 
     def consult_vectorstore(self, query: str, how_many: int = 3) -> List[Document]:
         """
@@ -75,5 +114,4 @@ class FusionRAG(DocumentUploader):
         - Returns a list
         """
         results = self.vector_store.similarity_search(query, k=how_many)
-
         return results
