@@ -25,6 +25,15 @@ if "DocumentUploader" not in st.session_state:
 if "index_name" not in st.session_state:
     st.session_state["index_name"] = None
 
+if "num_branches_fusionRAG" not in st.session_state:
+    st.session_state["num_branches_fusionRAG"] = None
+
+if "num_matches_per_branch" not in st.session_state:
+    st.session_state["num_matches_per_branch"] = None
+
+if "context_fusionRAG" not in st.session_state:
+    st.session_state["context_fusionRAG"] = None
+
 with server_state_lock["documents"]:
     if "documents" not in server_state:
         server_state.documents = []
@@ -51,7 +60,7 @@ with st.form("agent_instructions", border=False):
     st.markdown(
         "Introduce aquí la descripción de nuestro Agente Experto. Recuerda que aquí debes describir quien es, que debe hacer, etc"
     )
-    agent_instructions = st.text_input(
+    agent_instructions = st.text_area(
         label="Descripción del asistente",
         placeholder="Inserta aqui la descripción del agente",
     )
@@ -66,19 +75,80 @@ with st.form("agent_instructions", border=False):
 st.header("Configuración del FusionRAG")
 st.markdown("Configura cómo se va a comportar el FusionRAG")
 
-if st.button("Crear RAG"):
-    try:
-        with st.spinner("Creando Agente"):
-            # TODO add updated arguments
-            st.session_state.FusionRAG = FusionRAG(
-                openai_api_key=st.secrets["OPENAI_API_KEY"],
-                pinecone_api_key=st.secrets["PINECONE_API_KEY"],
-                index_name="law-documents",
-            )
-        st.success("El RAG se ha creado correctamente")
-    except Exception as e:
-        st.error(f"No se ha podido crear el RAG: \n{e}", icon="💀")
+st.subheader("Número de ramas del FusionRAG")
+st.markdown(
+    """El **número de ramas** del FusionRAG es el número de consultas que queremos hacer a la VectorStore (Donde tenemos los documentos).
+            Digamos que es, el número de veces que "podemos preguntar" a una persona que sabe mucho del tema.
+            El **número de matches por rama** es cuántos resultados queremos por cada rama.
+            
+            """
+)
 
+left, center, right = st.columns(3)
+
+with left:
+    st.session_state.num_branches_fusionRAG = st.number_input(
+        label="Número de ramas",
+        min_value=1,
+        max_value=5,
+        step=1,
+        value=1,
+        placeholder="Inserta aquí",
+    )
+
+with right:
+    st.session_state.num_matches_per_branch = st.number_input(
+        label="Número de matches por rama",
+        min_value=1,
+        max_value=5,
+        step=1,
+        value=1,
+        placeholder="Inserta aquí",
+    )
+
+st.subheader("Contexto del FusionRAG")
+st.markdown(
+    """
+            El **contexto** te permite decirle al fusionRAG que hacer con el input del usuario y cómo procesarlo para transformarlo en búsquedas. Pongo un ejemplo:
+            
+            _Eres un AI Assistant que coge el input del usuario y transforma la pregunta del usuario en frases para mejorar el resultado del RAG en búsquedas de un vector store. Cuando transformes el input, genera las frases teniendo en cuenta X e Y. Omite palabras A, B y C..._
+            """
+)
+
+st.session_state.context_fusionRAG = st.text_area(
+    "Inserta aquí el contexto para el FusionRAG.",
+    placeholder="Escribe aquí el contexto para el FusionRAG",
+)
+if st.button("Crear FusionRAG"):
+    if (
+        st.session_state.num_branches_fusionRAG is None
+        or st.session_state.num_matches_per_branch is None
+        or st.session_state.context_fusionRAG == ""
+    ):
+        if st.session_state.num_branches_fusionRAG is None:
+            st.warning("No puedes crear el FusionRAG sin indicar el número de ramas")
+        if st.session_state.num_matches_per_branch is None:
+            st.warning(
+                "No puedes crear el FusionRAG sin indicar el número de matches por rama"
+            )
+        if st.session_state.context_fusionRAG == "":
+            st.warning("No puedes crear el FusionRAG sin indicar el contexto")
+
+    else:
+        try:
+            with st.spinner("Creando Agente"):
+                # TODO add updated arguments
+                st.session_state.FusionRAG = FusionRAG(
+                    openai_api_key=st.secrets["OPENAI_API_KEY"],
+                    pinecone_api_key=st.secrets["PINECONE_API_KEY"],
+                    index_name="law-documents",
+                    context=st.session_state.context_fusionRAG,
+                    fusionRAG_branches=st.session_state.num_branches_fusionRAG,
+                    results_per_branch=st.session_state.num_matches_per_branch,
+                )
+            st.success("El RAG se ha creado correctamente")
+        except Exception as e:
+            st.error(f"No se ha podido crear el RAG: \n{e}", icon="💀")
 
 st.header("Temperatura del Agente")
 st.markdown(
