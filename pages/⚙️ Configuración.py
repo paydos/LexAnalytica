@@ -59,6 +59,7 @@ with st.form("agent_instructions", border=False):
     agent_instructions = st.text_area(
         label="Descripción del asistente",
         placeholder="Inserta aqui la descripción del agente",
+        value=st.session_state.ExpertAgentInstructions,
     )
     if st.form_submit_button("Añadir descripción del agente"):
         if len(agent_instructions) != 0:
@@ -114,6 +115,7 @@ st.markdown(
 st.session_state.context_fusionRAG = st.text_area(
     "Inserta aquí el contexto para el FusionRAG.",
     placeholder="Escribe aquí el contexto para el FusionRAG",
+    value=st.session_state.context_fusionRAG,
 )
 if st.button("Crear FusionRAG"):
     if (
