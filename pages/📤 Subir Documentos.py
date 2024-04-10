@@ -9,8 +9,8 @@ if "ExpertAgent" not in st.session_state:
     st.session_state["ExpertAgent"] = None
 
 # Set up Session State
-if "ExpertAgentFusionRAG" not in st.session_state:
-    st.session_state["ExpertAgentFusionRAG"] = None
+if "FusionRAG" not in st.session_state:
+    st.session_state["FusionRAG"] = None
 
 if "ExpertAgentInstructions" not in st.session_state:
     st.session_state["ExpertAgentInstructions"] = ""
