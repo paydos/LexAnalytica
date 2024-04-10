@@ -1,8 +1,11 @@
 import streamlit as st
+import toml
 
 from model import ExpertAgent, FusionRAG
 from utils.acknowledge import show_creator_acknowledgement
+from utils.config_file_gen import create_configfile
 from utils.pwd import check_password
+from utils.st_utils import load_config
 
 # Set up Session State
 if "ExpertAgent" not in st.session_state:
@@ -46,6 +49,38 @@ st.title("Ajustes del Agente Experto")
 
 if not check_password():
     st.stop()  # Do not continue if check_password is not True.
+
+with st.sidebar:
+    st.sidebar.header("Exportar configuración")
+    st.sidebar.markdown(
+        "Pulsa el botón para descargar la configuración actual. Esto incluye la **descripción** del Agente y el FusionRAG, el **número de ramas** y **resultados por rama**, así como también la temperatura."
+    )
+    if st.download_button(
+        label="Exportar configuración",
+        data=create_configfile(
+            agent_description=st.session_state.ExpertAgentInstructions,
+            agent_temperature=st.session_state.ExpertAgentTemperature,
+            fusionRAG_context=st.session_state.context_fusionRAG,
+            num_matches_per_branch=st.session_state.num_matches_per_branch,
+            num_branches_fusionRAG=st.session_state.num_branches_fusionRAG,
+        ),
+        file_name="ExpertAgentCONFIG.toml",
+    ):
+        st.success("Archivo de configuración exportado")
+    st.sidebar.header("Cargar configuración")
+    st.sidebar.markdown(
+        "Arrastra o pulsa aquí para cargar la configuración del Agente. Puedes modificarla después y volver a descargarla."
+    )
+    uploaded_config = st.file_uploader(
+        label="Sube aquí tu configuración",
+        accept_multiple_files=False,
+        type="toml",
+        label_visibility="collapsed",
+    )
+    if uploaded_config:
+        config_string = uploaded_config.getvalue().decode("utf-8")
+        load_config(config_string)
+        uploaded_config.close()
 
 
 st.markdown(
@@ -167,7 +202,6 @@ if st.button("Generar"):
     if st.session_state.ExpertAgentTemperature is not None:
         try:
             with st.spinner("Creando Agente"):
-                # TODO add updated arguments
                 st.session_state.ExpertAgent = ExpertAgent(
                     api_key=st.secrets["OPENAI_API_KEY"],
                     model_name=st.secrets["MODEL_NAME"],
