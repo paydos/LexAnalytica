@@ -6,7 +6,6 @@ import streamlit as st
 from model import ExpertAgent
 from utils.acknowledge import show_creator_acknowledgement
 from utils.pwd import check_password
-from utils.st_utils import waiting_messages
 
 if "ExpertAgent" not in st.session_state:
     st.session_state["ExpertAgent"] = None
