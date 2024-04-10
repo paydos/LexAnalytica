@@ -23,7 +23,7 @@ class ExpertAgent:
         self.agent_description = agent_description
         self.temperature = temperature
         self.fusion_rag = fusion_rag
-
+        self.status = ""
         # Creates an instance of the ChatOpenAI class
         self._chat_instance()
 
@@ -75,17 +75,17 @@ class ExpertAgent:
         """
 
         if self.chat_instance:
-            self.chat(agent_description, rag=False)
+            self.chat(agent_description, rag=False, status=None)
         else:
             raise "The chat_instance had an error"
 
     def _augment_prompt(self, human_msg: str):
-        documents = self.fusion_rag.consult_vectorstore(human_msg, how_many=3)
+        documents = self.fusion_rag.fusion_rag(self.chat_instance, human_msg)
         documents_processed = "\n".join([x.page_content for x in documents])
 
         augmented_prompt = f"""
-        Responde a la pregunta basandote tan sólo usando el siguiente contexto.
-        Pregunta:{human_msg}
+        Instruciones del asistente de inteligencia artificial: {self.agent_description}.
+        Pregunta:{human_msg}.
 
         Contexto:
         {documents_processed}
@@ -93,9 +93,15 @@ class ExpertAgent:
         print(f"\n\n{augmented_prompt}\n\n")
         return augmented_prompt
 
-    def chat(self, message, rag: bool = True):
+    def chat(self, message, status, rag: bool = True):
         # Create a human message
         if rag:
+            if hasattr(status, "update"):
+                status.update(
+                    label="Generando ramas de conocimiento",
+                    state="running",
+                    expanded=False,
+                )
             augmented_message = self._augment_prompt(message)
             augmented_message = HumanMessage(content=augmented_message)
 
@@ -107,11 +113,24 @@ class ExpertAgent:
             message = HumanMessage(content=message)
             self._chat_history(message)
             self._enhanced_chat_history(message)
-
+        if hasattr(status, "update"):
+            status.update(
+                label="Generando respuesta",
+                state="running",
+                expanded=False,
+            )
         ai_message_content = self.chat_instance.invoke(self.enhanced_chat_history)
         ai_message = AIMessage(content=ai_message_content.content)
 
         self.ai_message = ai_message
+        if rag:
+            if hasattr(status, "update"):
+
+                status.update(
+                    label="Respuesta generada",
+                    state="complete",
+                    expanded=False,
+                )
 
         self._chat_history(ai_message)
         self._enhanced_chat_history(ai_message)

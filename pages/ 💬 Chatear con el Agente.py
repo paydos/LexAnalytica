@@ -1,3 +1,4 @@
+import time
 from time import sleep
 
 import streamlit as st
@@ -6,10 +7,14 @@ from streamlit_server_state import server_state, server_state_lock
 from model import ExpertAgent
 from utils.acknowledge import show_creator_acknowledgement
 from utils.pwd import check_password
+from utils.st_utils import waiting_messages
 
-# Set up Session State
 if "ExpertAgent" not in st.session_state:
     st.session_state["ExpertAgent"] = None
+
+# Set up Session State
+if "ExpertAgentFusionRAG" not in st.session_state:
+    st.session_state["ExpertAgentFusionRAG"] = None
 
 if "ExpertAgentInstructions" not in st.session_state:
     st.session_state["ExpertAgentInstructions"] = ""
@@ -22,6 +27,15 @@ if "DocumentUploader" not in st.session_state:
 
 if "index_name" not in st.session_state:
     st.session_state["index_name"] = None
+
+if "num_branches_fusionRAG" not in st.session_state:
+    st.session_state["num_branches_fusionRAG"] = None
+
+if "num_matches_per_branch" not in st.session_state:
+    st.session_state["num_matches_per_branch"] = None
+
+if "context_fusionRAG" not in st.session_state:
+    st.session_state["context_fusionRAG"] = None
 
 with server_state_lock["documents"]:
     if "documents" not in server_state:
@@ -54,7 +68,24 @@ with st.sidebar:
                 st.error(f"La memoria no ha sido reseteada:\n {e}", icon="🧠")
         else:
             st.error("La memoria no se puede resetear porque no has creado un Agente")
-# Prints the whole convo
+    st.sidebar.header("Lógica de ramas de búsqueda FusionRAG")
+    if st.session_state.FusionRAG.fusionRAG_generated_queries is not None:
+        for branch in st.session_state.FusionRAG.fusionRAG_generated_queries:
+            st.markdown(f"- {branch}")
+            time.sleep(0.5)
+    # Display selected settings for FusionRAG
+    st.sidebar.header("Configuración seleccionada de FusionRAG")
+    st.sidebar.markdown(
+        f"Número de ramas: **{st.session_state.num_branches_fusionRAG or 'No establecido'}**"
+    )
+    st.sidebar.markdown(
+        f"Resultados por rama: **{st.session_state.num_matches_per_branch or 'No establecido'}**"
+    )
+    st.sidebar.markdown(
+        f"Temperatura: **{st.session_state.ExpertAgentTemperature or 'No establecido'}**"
+    )
+
+
 if isinstance(st.session_state.ExpertAgent, ExpertAgent):
     if st.session_state.ExpertAgent.chat_history:
         for message in st.session_state.ExpertAgent.chat_history[2:]:
@@ -74,8 +105,8 @@ if isinstance(st.session_state.ExpertAgent, ExpertAgent):
         # Show a typing indicator while the agent is processing the input
         with st.chat_message("Agente Experto", avatar="🤖"):
 
-            with st.spinner("Generando Respuesta"):
-                st.session_state.ExpertAgent.chat(user_input)
+            with st.status("Generando Respuesta", expanded=False) as status:
+                st.session_state.ExpertAgent.chat(user_input, status=status)
                 ai_message = st.session_state.ExpertAgent.ai_message.content
 
         with st.chat_message("Agente Experto", avatar="🤖"):

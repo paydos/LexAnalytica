@@ -6,9 +6,12 @@ from utils.pdf2txt import convert_to_text
 from utils.pwd import check_password
 from utils.vector_store_uploader import DocumentUploader
 
-# Set up Session State
 if "ExpertAgent" not in st.session_state:
     st.session_state["ExpertAgent"] = None
+
+# Set up Session State
+if "ExpertAgentFusionRAG" not in st.session_state:
+    st.session_state["ExpertAgentFusionRAG"] = None
 
 if "ExpertAgentInstructions" not in st.session_state:
     st.session_state["ExpertAgentInstructions"] = ""
@@ -20,7 +23,16 @@ if "DocumentUploader" not in st.session_state:
     st.session_state["DocumentUploader"] = None
 
 if "index_name" not in st.session_state:
-    st.session_state["index_name"] = "law-documents"
+    st.session_state["index_name"] = None
+
+if "num_branches_fusionRAG" not in st.session_state:
+    st.session_state["num_branches_fusionRAG"] = None
+
+if "num_matches_per_branch" not in st.session_state:
+    st.session_state["num_matches_per_branch"] = None
+
+if "context_fusionRAG" not in st.session_state:
+    st.session_state["context_fusionRAG"] = None
 
 with server_state_lock["documents"]:
     if "documents" not in server_state:
