@@ -62,7 +62,7 @@ if st.button("Subir documentos al Vector Store"):
             openai_api_key=st.secrets["OPENAI_API_KEY"],
             openai_embeddings_model="text-embedding-3-large",
             pinecone_api_key=st.secrets["PINECONE_API_KEY"],
-            index_name=st.session_state.index_name,
+            index_name="law-documents",
         )
     if len(uploaded_files) > 0:
         with server_state_lock["documents"]:
