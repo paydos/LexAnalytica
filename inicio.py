@@ -1,5 +1,3 @@
-import hmac
-
 import streamlit as st
 
 from utils.acknowledge import show_creator_acknowledgement
@@ -25,7 +23,6 @@ st.set_page_config(
     layout="centered",
     initial_sidebar_state="expanded",
 )
-# streamlit_app.py1
 
 st.write("# Bienvenido al Agente Experto 👋")
 
