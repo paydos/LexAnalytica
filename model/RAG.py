@@ -49,7 +49,7 @@ class FusionRAG(DocumentUploader):
             fusionRAG_branches  # "How many fusionRAG branches will be created"
         )
         self.fusionRAG_generated_queries = fusionRAG_generated_queries
-
+        self.fusionRAG_query_to_results_map = None
         self.results_per_branch = results_per_branch
 
         self._create_embeddings_model()
@@ -93,14 +93,19 @@ class FusionRAG(DocumentUploader):
         self.fusionRAG_generated_queries = response_content.strip().split("\n")
 
         vectorstore_results = []
+        query_to_results_map = {}
 
         with ThreadPoolExecutor() as executor:
-            futures = [
-                executor.submit(self._consult_vectorstore_threaded, query)
+            futures = {
+                query: executor.submit(self._consult_vectorstore_threaded, query)
                 for query in self.fusionRAG_generated_queries
-            ]
-            for i, future in enumerate(futures):
-                vectorstore_results.extend(future.result())
+            }
+            for query, future in futures.items():
+                result = future.result()
+                vectorstore_results.extend(result)
+                query_to_results_map[query] = result
+
+        self.fusionRAG_query_to_results_map = query_to_results_map
 
         return vectorstore_results
 
