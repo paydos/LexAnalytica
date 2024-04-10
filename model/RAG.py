@@ -94,7 +94,6 @@ class FusionRAG(DocumentUploader):
 
         vectorstore_results = []
 
-        # TODO Does this work??
         with ThreadPoolExecutor() as executor:
             futures = [
                 executor.submit(self._consult_vectorstore_threaded, query)
@@ -103,9 +102,6 @@ class FusionRAG(DocumentUploader):
             for i, future in enumerate(futures):
                 vectorstore_results.extend(future.result())
 
-        with open("query_gener.txt", "w") as file:
-            for result in self.fusionRAG_generated_queries:
-                file.write(f"{result}\n")
         return vectorstore_results
 
     def consult_vectorstore(self, query: str, how_many: int = 3) -> List[Document]:

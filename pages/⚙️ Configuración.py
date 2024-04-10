@@ -1,5 +1,4 @@
 import streamlit as st
-from streamlit_server_state import server_state, server_state_lock
 
 from model import ExpertAgent, FusionRAG
 from utils.acknowledge import show_creator_acknowledgement
@@ -34,9 +33,6 @@ if "num_matches_per_branch" not in st.session_state:
 if "context_fusionRAG" not in st.session_state:
     st.session_state["context_fusionRAG"] = None
 
-with server_state_lock["documents"]:
-    if "documents" not in server_state:
-        server_state.documents = []
 
 st.set_page_config(
     page_title="Ajustes",

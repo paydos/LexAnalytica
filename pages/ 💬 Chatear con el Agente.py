@@ -2,7 +2,6 @@ import time
 from time import sleep
 
 import streamlit as st
-from streamlit_server_state import server_state, server_state_lock
 
 from model import ExpertAgent
 from utils.acknowledge import show_creator_acknowledgement
@@ -37,10 +36,6 @@ if "num_matches_per_branch" not in st.session_state:
 if "context_fusionRAG" not in st.session_state:
     st.session_state["context_fusionRAG"] = None
 
-with server_state_lock["documents"]:
-    if "documents" not in server_state:
-        server_state.documents = []
-
 
 st.title("Chat con el Agente Experto")
 if not check_password():
@@ -69,10 +64,11 @@ with st.sidebar:
         else:
             st.error("La memoria no se puede resetear porque no has creado un Agente")
     st.sidebar.header("Lógica de ramas de búsqueda FusionRAG")
-    if st.session_state.FusionRAG.fusionRAG_generated_queries is not None:
-        for branch in st.session_state.FusionRAG.fusionRAG_generated_queries:
-            st.markdown(f"- {branch}")
-            time.sleep(0.5)
+    if "FusionRAG" in st.session_state.keys():
+        if st.session_state.FusionRAG.fusionRAG_generated_queries is not None:
+            for branch in st.session_state.FusionRAG.fusionRAG_generated_queries:
+                st.markdown(f"- {branch}")
+                time.sleep(0.5)
     # Display selected settings for FusionRAG
     st.sidebar.header("Configuración seleccionada de FusionRAG")
     st.sidebar.markdown(

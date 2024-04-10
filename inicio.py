@@ -1,7 +1,6 @@
 import hmac
 
 import streamlit as st
-from streamlit_server_state import server_state, server_state_lock
 
 from utils.acknowledge import show_creator_acknowledgement
 from utils.pwd import check_password
@@ -19,9 +18,6 @@ if "ExpertAgentTemperature" not in st.session_state:
 if "DocumentUploader" not in st.session_state:
     st.session_state["DocumentUploader"] = None
 
-with server_state_lock["documents"]:
-    if "documents" not in server_state:
-        server_state.documents = []
 
 st.set_page_config(
     page_title="Menú principal",
