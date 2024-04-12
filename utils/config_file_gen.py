@@ -7,11 +7,11 @@ def create_configfile(
 ) -> str:
     config_content = f"""
     [ExpertAgent]
-description = "{agent_description}"
+description = \"\"\"{agent_description}\"\"\"
 temperature = {agent_temperature}
 
 [FusionRAG]
-context = "{fusionRAG_context}"
+context = \"\"\"{fusionRAG_context}\"\"\"
 num_matches_per_branch = {num_matches_per_branch}
 num_branches = {num_branches_fusionRAG}
     """
