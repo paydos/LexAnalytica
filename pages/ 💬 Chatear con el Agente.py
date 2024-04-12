@@ -63,11 +63,16 @@ with st.sidebar:
         else:
             st.error("La memoria no se puede resetear porque no has creado un Agente")
     st.sidebar.header("Lógica de ramas de búsqueda FusionRAG")
-    if "FusionRAG" in st.session_state.keys():
+    if (
+        "FusionRAG" in st.session_state.keys()
+        and st.session_state.FusionRAG is not None
+    ):
         if st.session_state.FusionRAG.fusionRAG_generated_queries is not None:
             for branch in st.session_state.FusionRAG.fusionRAG_generated_queries:
                 st.markdown(f"- {branch}")
                 time.sleep(0.5)
+    else:
+        st.warning("FusionRAG is not initialised")
     # Display selected settings for FusionRAG
     st.sidebar.header("Configuración seleccionada de FusionRAG")
     st.sidebar.markdown(
