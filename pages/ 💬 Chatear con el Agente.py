@@ -124,12 +124,13 @@ with tab2:
     st.markdown(
         f"""Aquí puedes encontrar los documentos recuperador por el FusionRAG. Hay un total de **{st.session_state.num_branches_fusionRAG*st.session_state.num_matches_per_branch} documentos**"""
     )
-    if st.session_state.FusionRAG.fusionRAG_query_to_results_map:
+    if st.session_state.FusionRAG:
+        if st.session_state.FusionRAG.fusionRAG_query_to_results_map:
 
-        display_fusionRAG_docs(
-            st.session_state.FusionRAG.fusionRAG_query_to_results_map
-        )
-    else:
-        st.warning(
-            "Vuelve cuando hayas preguntado. Todavía no se ha consultado la tienda de vectores."
-        )
+            display_fusionRAG_docs(
+                st.session_state.FusionRAG.fusionRAG_query_to_results_map
+            )
+        else:
+            st.warning(
+                "Vuelve cuando hayas preguntado. Todavía no se ha consultado la tienda de vectores."
+            )
