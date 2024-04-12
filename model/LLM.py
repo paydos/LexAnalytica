@@ -125,7 +125,6 @@ class ExpertAgent:
         self.ai_message = ai_message
         if rag:
             if hasattr(status, "update"):
-
                 status.update(
                     label="Respuesta generada",
                     state="complete",
