@@ -90,12 +90,12 @@ class ExpertAgent:
         Contexto:
         {documents_processed}
         """
-        print(f"\n\n{augmented_prompt}\n\n")
         return augmented_prompt
 
     def chat(self, message, status, rag: bool = True):
         # Create a human message
         if rag:
+            print(message)
             if hasattr(status, "update"):
                 status.update(
                     label="Generando ramas de conocimiento",
