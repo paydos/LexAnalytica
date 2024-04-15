@@ -55,18 +55,27 @@ with st.sidebar:
     st.sidebar.markdown(
         "Pulsa el botón para descargar la configuración actual. Esto incluye la **descripción** del Agente y el FusionRAG, el **número de ramas** y **resultados por rama**, así como también la temperatura."
     )
-    if st.download_button(
-        label="Exportar configuración",
-        data=create_configfile(
-            agent_description=st.session_state.ExpertAgentInstructions,
-            agent_temperature=st.session_state.ExpertAgentTemperature,
-            fusionRAG_context=st.session_state.context_fusionRAG,
-            num_matches_per_branch=st.session_state.num_matches_per_branch,
-            num_branches_fusionRAG=st.session_state.num_branches_fusionRAG,
-        ),
-        file_name="ExpertAgentCONFIG.toml",
-    ):
-        st.success("Archivo de configuración exportado")
+    if None not in [
+        st.session_state.ExpertAgentInstructions,
+        st.session_state.ExpertAgentTemperature,
+        st.session_state.context_fusionRAG,
+        st.session_state.num_matches_per_branch,
+        st.session_state.num_branches_fusionRAG,
+    ]:
+        if st.download_button(
+            label="Exportar configuración",
+            data=create_configfile(
+                agent_description=st.session_state.ExpertAgentInstructions,
+                agent_temperature=st.session_state.ExpertAgentTemperature,
+                fusionRAG_context=st.session_state.context_fusionRAG,
+                num_matches_per_branch=st.session_state.num_matches_per_branch,
+                num_branches_fusionRAG=st.session_state.num_branches_fusionRAG,
+            ),
+            file_name="ExpertAgentCONFIG.toml",
+        ):
+            st.success("Archivo de configuración exportado")
+    else:
+        st.warning("No se puede exportar la configuración porque falta información.")
     st.sidebar.header("Cargar configuración")
     st.sidebar.markdown(
         "Arrastra o pulsa aquí para cargar la configuración del Agente. Puedes modificarla después y volver a descargarla."
@@ -124,7 +133,7 @@ with left:
         min_value=1,
         max_value=5,
         step=1,
-        value=1,
+        value=st.session_state.num_branches_fusionRAG,
         placeholder="Inserta aquí",
     )
 
@@ -134,7 +143,7 @@ with right:
         min_value=1,
         max_value=5,
         step=1,
-        value=1,
+        value=st.session_state.num_matches_per_branch,
         placeholder="Inserta aquí",
     )
 
@@ -189,7 +198,11 @@ st.markdown(
 )
 with st.form("agent_temperature", border=False):
     agent_temperature = st.slider(
-        "Temperatura", min_value=0.0, max_value=1.0, step=0.05, value=0.7
+        "Temperatura",
+        min_value=0.0,
+        max_value=1.0,
+        step=0.05,
+        value=st.session_state.ExpertAgentTemperature,
     )
     if st.form_submit_button("Configurar temperatura"):
         st.session_state.ExpertAgentTemperature = agent_temperature
