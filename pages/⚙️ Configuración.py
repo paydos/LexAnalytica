@@ -5,45 +5,19 @@ from model import ExpertAgent, FusionRAG
 from utils.acknowledge import show_creator_acknowledgement
 from utils.config_file_gen import create_configfile
 from utils.pwd import check_password
+from utils.session_state_inst import inst_states
 from utils.st_utils import load_config
 
-# Set up Session State
-if "ExpertAgent" not in st.session_state:
-    st.session_state["ExpertAgent"] = None
-
-# Set up Session State
-if "FusionRAG" not in st.session_state:
-    st.session_state["FusionRAG"] = None
-
-if "ExpertAgentInstructions" not in st.session_state:
-    st.session_state["ExpertAgentInstructions"] = ""
-
-if "ExpertAgentTemperature" not in st.session_state:
-    st.session_state["ExpertAgentTemperature"] = None
-
-if "DocumentUploader" not in st.session_state:
-    st.session_state["DocumentUploader"] = None
-
-if "index_name" not in st.session_state:
-    st.session_state["index_name"] = None
-
-if "num_branches_fusionRAG" not in st.session_state:
-    st.session_state["num_branches_fusionRAG"] = None
-
-if "num_matches_per_branch" not in st.session_state:
-    st.session_state["num_matches_per_branch"] = None
-
-if "context_fusionRAG" not in st.session_state:
-    st.session_state["context_fusionRAG"] = None
-
+inst_states()
 
 st.set_page_config(
-    page_title="Ajustes",
-    page_icon="🔧",
+    page_title="Ajustes 🔧",
+    page_icon="data/branded_icon.png",
     layout="centered",
     initial_sidebar_state="expanded",
 )
 
+disabled = st.session_state.examMode  # Variable to disable all inputs
 
 st.title("Ajustes del Agente Experto")
 
@@ -72,6 +46,7 @@ with st.sidebar:
                 num_branches_fusionRAG=st.session_state.num_branches_fusionRAG,
             ),
             file_name="ExpertAgentCONFIG.toml",
+            disabled=disabled,
         ):
             st.success("Archivo de configuración exportado")
     else:
@@ -85,6 +60,7 @@ with st.sidebar:
         accept_multiple_files=False,
         type="toml",
         label_visibility="collapsed",
+        disabled=disabled,
     )
     if uploaded_config:
         config_string = uploaded_config.getvalue().decode("utf-8")
@@ -104,8 +80,9 @@ with st.form("agent_instructions", border=False):
         label="Descripción del asistente",
         placeholder="Inserta aqui la descripción del agente",
         value=st.session_state.ExpertAgentInstructions,
+        disabled=disabled,
     )
-    if st.form_submit_button("Añadir descripción del agente"):
+    if st.form_submit_button("Añadir descripción del agente", disabled=disabled):
         if len(agent_instructions) != 0:
             st.session_state.ExpertAgentInstructions = agent_instructions
             st.success("Descripción del Agente añadida")
@@ -113,6 +90,22 @@ with st.form("agent_instructions", border=False):
             st.session_state.ExpertAgentInstructions = agent_instructions
             st.warning("El Agente no tiene descripción")
 
+st.header("Temperatura del Agente")
+st.markdown(
+    "La temperatura es un parametro en los LLM donde defines cómo de random quieres que sea la respuesta. Cuanto más alto, más probabilidad de que la respuesta sea muy de Vincent van Gogh. Podeis probar a ver que tal funciona. Para que os hagais una idea, el chatGPT tiene 0.7"
+)
+with st.form("agent_temperature", border=False):
+    agent_temperature = st.slider(
+        "Temperatura",
+        min_value=0.0,
+        max_value=1.0,
+        step=0.05,
+        value=st.session_state.ExpertAgentTemperature,
+        disabled=disabled,
+    )
+    if st.form_submit_button("Configurar temperatura", disabled=disabled):
+        st.session_state.ExpertAgentTemperature = agent_temperature
+        st.success(f"Temperatura configurada a {agent_temperature}")
 st.header("Configuración del FusionRAG")
 st.markdown("Configura cómo se va a comportar el FusionRAG")
 
@@ -135,6 +128,7 @@ with left:
         step=1,
         value=st.session_state.num_branches_fusionRAG,
         placeholder="Inserta aquí",
+        disabled=disabled,
     )
 
 with right:
@@ -145,6 +139,7 @@ with right:
         step=1,
         value=st.session_state.num_matches_per_branch,
         placeholder="Inserta aquí",
+        disabled=disabled,
     )
 
 st.subheader("Contexto del FusionRAG")
@@ -160,8 +155,9 @@ st.session_state.context_fusionRAG = st.text_area(
     "Inserta aquí el contexto para el FusionRAG.",
     placeholder="Escribe aquí el contexto para el FusionRAG",
     value=st.session_state.context_fusionRAG,
+    disabled=disabled,
 )
-if st.button("Crear FusionRAG"):
+if st.button("Crear FusionRAG", disabled=disabled):
     if (
         st.session_state.num_branches_fusionRAG is None
         or st.session_state.num_matches_per_branch is None
@@ -192,26 +188,11 @@ if st.button("Crear FusionRAG"):
         except Exception as e:
             st.error(f"No se ha podido crear el RAG: \n{e}", icon="💀")
 
-st.header("Temperatura del Agente")
-st.markdown(
-    "La temperatura es un parametro en los LLM donde defines cómo de random quieres que sea la respuesta. Cuanto más alto, más probabilidad de que la respuesta no diste mucho de la de un esquizofrénico. Podeis probar a ver que tal funciona. Para que os hagais una idea, el chatGPT tiene 0.7"
-)
-with st.form("agent_temperature", border=False):
-    agent_temperature = st.slider(
-        "Temperatura",
-        min_value=0.0,
-        max_value=1.0,
-        step=0.05,
-        value=st.session_state.ExpertAgentTemperature,
-    )
-    if st.form_submit_button("Configurar temperatura"):
-        st.session_state.ExpertAgentTemperature = agent_temperature
-        st.success(f"Temperatura configurada a {agent_temperature}")
 st.header("Crear Agente Experto")
 st.markdown(
     "Una vez ya tengas todas las configuraciones, haz click en 'Generar' para poder empezar a chatear con nuestro Agente"
 )
-if st.button("Generar"):
+if st.button("Generar", disabled=disabled):
     if st.session_state.ExpertAgentTemperature is not None:
         try:
             with st.spinner("Creando Agente"):

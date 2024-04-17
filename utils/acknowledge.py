@@ -9,4 +9,4 @@ def show_creator_acknowledgement():
     st.markdown(
         "👩‍⚖️ Equipo Legal: Saira De Brito | Lucía Ríos | Rodrigo Hurtado | Javier de Rojas"
     )
-    st.markdown("Todos los derechos reservados © 2023")
+    st.markdown("Todos los derechos reservados © 2024")

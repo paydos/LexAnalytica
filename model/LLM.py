@@ -92,13 +92,19 @@ class ExpertAgent:
         """
         return augmented_prompt
 
-    def chat(self, message, status, rag: bool = True):
+    def chat(
+        self,
+        message,
+        status,
+        count=0,
+        total_count=0,
+        rag: bool = True,
+    ):
         # Create a human message
         if rag:
-            print(message)
             if hasattr(status, "update"):
                 status.update(
-                    label="Generando ramas de conocimiento",
+                    label=f"Generando respuesta para pregunta {count+1} de {total_count} ",
                     state="running",
                     expanded=False,
                 )
@@ -115,7 +121,7 @@ class ExpertAgent:
             self._enhanced_chat_history(message)
         if hasattr(status, "update"):
             status.update(
-                label="Generando respuesta",
+                label=f"Generando respuesta para la pregunta {count+1}",
                 state="running",
                 expanded=False,
             )
