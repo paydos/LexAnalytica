@@ -2,7 +2,9 @@ import streamlit as st
 
 from utils.acknowledge import show_creator_acknowledgement
 from utils.pwd import check_password
+from utils.session_state_inst import inst_states
 
+inst_states()
 st.title("Ajustes de Desarrollador")
 if not check_password():
     st.stop()  # Do not continue if check_password is not True.
