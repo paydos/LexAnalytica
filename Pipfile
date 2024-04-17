@@ -19,6 +19,8 @@ streamlit-server-state = "*"
 langchain-pinecone = "*"
 matplotlib = "*"
 toml = "*"
+streamlit-extras = "*"
+streamlit-chat = "*"
 
 [dev-packages]
 ipykernel = "*"

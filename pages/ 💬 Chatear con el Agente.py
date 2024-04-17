@@ -2,42 +2,24 @@ import time
 from time import sleep
 
 import streamlit as st
+from streamlit_chat import message as st_message
+from streamlit_extras.switch_page_button import switch_page
 
 from model import ExpertAgent
-from utils.acknowledge import show_creator_acknowledgement
 from utils.pwd import check_password
+from utils.session_state_inst import inst_states
 from utils.st_utils import display_fusionRAG_docs
 
-if "ExpertAgent" not in st.session_state:
-    st.session_state["ExpertAgent"] = None
-
-# Set up Session State
-if "FusionRAG" not in st.session_state:
-    st.session_state["FusionRAG"] = None
-
-if "ExpertAgentInstructions" not in st.session_state:
-    st.session_state["ExpertAgentInstructions"] = ""
-
-if "ExpertAgentTemperature" not in st.session_state:
-    st.session_state["ExpertAgentTemperature"] = None
-
-if "DocumentUploader" not in st.session_state:
-    st.session_state["DocumentUploader"] = None
-
-if "index_name" not in st.session_state:
-    st.session_state["index_name"] = None
-
-if "num_branches_fusionRAG" not in st.session_state:
-    st.session_state["num_branches_fusionRAG"] = None
-
-if "num_matches_per_branch" not in st.session_state:
-    st.session_state["num_matches_per_branch"] = None
-
-if "context_fusionRAG" not in st.session_state:
-    st.session_state["context_fusionRAG"] = None
-
-
-st.title("Chat con el Agente Experto")
+inst_states()
+st.set_page_config(
+    page_title="Chat",
+    page_icon="data/branded_icon.png",
+    layout="centered",
+    initial_sidebar_state="collapsed",
+)
+col1, col2 = st.columns([0.9, 0.1])
+col1.title("Chat con LexAnalytica")
+col2.image("data/bot.gif")
 if not check_password():
     st.stop()  # Do not continue if check_password is not True.
 
@@ -49,7 +31,7 @@ with st.sidebar:
     st.markdown(
         "Si quieres empezar una nueva conversación, puedes borrar su memoria, pero mantener su descripción"
     )
-    if st.button("Borrar memoria del agente"):
+    if st.button("Borrar memoria del agente", disabled=True):
         if st.session_state.ExpertAgent:
             try:
                 st.session_state.ExpertAgent.chat_history = (
@@ -63,6 +45,8 @@ with st.sidebar:
                 st.error(f"La memoria no ha sido reseteada:\n {e}", icon="🧠")
         else:
             st.error("La memoria no se puede resetear porque no has creado un Agente")
+
+    st.sidebar.markdown(f"El modo examen está en **{st.session_state.examMode}**")
     st.sidebar.header("Lógica de ramas de búsqueda FusionRAG")
     if (
         "FusionRAG" in st.session_state.keys()
@@ -86,51 +70,93 @@ with st.sidebar:
         f"Temperatura: **{st.session_state.ExpertAgentTemperature or 'No establecido'}**"
     )
 
-tab1, tab2 = st.tabs(["Chat con el Agente", "Documentos del FusionRAG"])
-with tab1:
-    if isinstance(st.session_state.ExpertAgent, ExpertAgent):
-        if st.session_state.ExpertAgent.chat_history:
-            for message in st.session_state.ExpertAgent.chat_history[2:]:
-                if message.type == "human":
-                    with st.chat_message(message.content, avatar="👨"):
-                        st.markdown(message.content)
-                else:
-                    with st.chat_message(message.content, avatar="🤖"):
-                        st.markdown(message.content)
+if st.session_state.examMode == False:
 
-        user_input = st.chat_input("Escribe aquí tu consulta al agente experto")
+    tab1, tab2 = st.tabs(["Chat con el Agente", "Documentos del FusionRAG"])
 
-        if user_input:
-            with st.chat_message("user", avatar="👨"):
-                st.markdown(user_input)
+    chatContainer = st.container(border=False, height=600)
+    user_input = st.chat_input("Escribe aquí tu consulta al agente experto")
 
-            # Show a typing indicator while the agent is processing the input
-            with st.chat_message("Agente Experto", avatar="🤖"):
+    with tab1:
+        if isinstance(st.session_state.ExpertAgent, ExpertAgent):
+            if st.session_state.ExpertAgent.chat_history:
+                with chatContainer:
+                    for message in st.session_state.ExpertAgent.chat_history[2:]:
+                        if message.type == "human":
+                            st_message(message.content, is_user=True)
 
-                with st.status("Generando Respuesta", expanded=False) as status:
-                    st.session_state.ExpertAgent.chat(user_input, status=status)
-                    ai_message = st.session_state.ExpertAgent.ai_message.content
+                        else:
+                            st_message(message.content, is_user=False)
 
-            with st.chat_message("Agente Experto", avatar="🤖"):
-                st.markdown(ai_message)
-                st.rerun()
+                if user_input:
+                    st_message(user_input, is_user=True)
 
-    else:
-        st.warning(
-            "No has creado el Agente. Ve a la configuración y pulsa en **Generar**"
-        )
-with tab2:
-    st.title("Resultados del FusionRAG")
-    st.markdown(
-        f"""Aquí puedes encontrar los documentos recuperador por el FusionRAG. Hay un total de **{st.session_state.num_branches_fusionRAG*st.session_state.num_matches_per_branch} documentos**"""
-    )
-    if st.session_state.FusionRAG:
-        if st.session_state.FusionRAG.fusionRAG_query_to_results_map:
+                    # Show a typing indicator while the agent is processing the input
 
-            display_fusionRAG_docs(
-                st.session_state.FusionRAG.fusionRAG_query_to_results_map
-            )
+                    with st.status("Generando Respuesta", expanded=False) as status:
+                        st.session_state.ExpertAgent.chat(user_input, status=status)
+                        ai_message = st.session_state.ExpertAgent.ai_message.content
+                        st_message(ai_message, is_user=False)
+                    st.rerun()
+
         else:
             st.warning(
-                "Vuelve cuando hayas preguntado. Todavía no se ha consultado la tienda de vectores."
+                "No has creado el Agente. Ve a la configuración y pulsa en **Generar**"
             )
+    with tab2:
+        if st.session_state.num_branches_fusionRAG:
+            st.title("Resultados del FusionRAG")
+            st.markdown(
+                f"""Aquí puedes encontrar los documentos recuperador por el FusionRAG. Hay un total de **{st.session_state.num_branches_fusionRAG*st.session_state.num_matches_per_branch} documentos**"""
+            )
+            if st.session_state.FusionRAG:
+                if st.session_state.FusionRAG.fusionRAG_query_to_results_map:
+
+                    display_fusionRAG_docs(
+                        st.session_state.FusionRAG.fusionRAG_query_to_results_map
+                    )
+                else:
+                    st.warning(
+                        "Vuelve cuando hayas preguntado. Todavía no se ha consultado la tienda de vectores."
+                    )
+
+else:  # In examMode == True
+    if isinstance(st.session_state.ExpertAgent, ExpertAgent):
+        statusBar = st.status(label="Preguntas")
+        if st.session_state.unpackedQuestions:
+            for i, question in enumerate(st.session_state.unpackedQuestions):
+
+                st.session_state.ExpertAgent.chat(
+                    question["unpacked_question"],
+                    status=statusBar,
+                    count=i,
+                    total_count=len(st.session_state.unpackedQuestions),
+                )
+            st.session_state.ExpertAgent_finished = True
+
+            st.success(
+                "Todas las preguntas se han respondido. Pulsa en **continuar** para descargar el resultado"
+            )
+            if st.session_state.ExpertAgent_finished:
+
+                if st.button("Continuar a la evaluación de las respuestas"):
+                    switch_page("Evaluación")
+
+        if st.session_state.num_branches_fusionRAG:
+            st.title("Resultados del FusionRAG")
+            st.markdown(
+                f"""Aquí puedes encontrar los documentos recuperador por el FusionRAG. Hay un total de **{st.session_state.num_branches_fusionRAG*st.session_state.num_matches_per_branch} documentos**"""
+            )
+            if st.session_state.FusionRAG:
+                if st.session_state.FusionRAG.fusionRAG_query_to_results_map:
+                    display_fusionRAG_docs(
+                        st.session_state.FusionRAG.fusionRAG_query_to_results_map
+                    )
+                else:
+                    st.warning(
+                        "Vuelve cuando hayas preguntado. Todavía no se ha consultado la tienda de vectores."
+                    )
+    else:
+        st.warning(
+            "No has creado el Agente Experto. Ve a **configuración** o **evaluación**."
+        )

@@ -1,37 +1,11 @@
 import streamlit as st
 
 from utils.acknowledge import show_creator_acknowledgement
-from utils.pdf2txt import convert_to_text
 from utils.pwd import check_password
+from utils.session_state_inst import inst_states
 from utils.vector_store_uploader import DocumentUploader
 
-if "ExpertAgent" not in st.session_state:
-    st.session_state["ExpertAgent"] = None
-
-# Set up Session State
-if "FusionRAG" not in st.session_state:
-    st.session_state["FusionRAG"] = None
-
-if "ExpertAgentInstructions" not in st.session_state:
-    st.session_state["ExpertAgentInstructions"] = ""
-
-if "ExpertAgentTemperature" not in st.session_state:
-    st.session_state["ExpertAgentTemperature"] = None
-
-if "DocumentUploader" not in st.session_state:
-    st.session_state["DocumentUploader"] = None
-
-if "index_name" not in st.session_state:
-    st.session_state["index_name"] = None
-
-if "num_branches_fusionRAG" not in st.session_state:
-    st.session_state["num_branches_fusionRAG"] = None
-
-if "num_matches_per_branch" not in st.session_state:
-    st.session_state["num_matches_per_branch"] = None
-
-if "context_fusionRAG" not in st.session_state:
-    st.session_state["context_fusionRAG"] = None
+inst_states()
 
 
 st.set_page_config(
@@ -77,3 +51,4 @@ if st.button("Subir documentos al Vector Store"):
 
     else:
         st.warning("No hay ningún documento añadido para subirlo")
+show_creator_acknowledgement()
