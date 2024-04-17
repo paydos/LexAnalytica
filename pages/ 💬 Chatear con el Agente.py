@@ -137,10 +137,10 @@ else:  # In examMode == True
             st.success(
                 "Todas las preguntas se han respondido. Pulsa en **continuar** para descargar el resultado"
             )
-            if st.session_state.ExpertAgent_finished:
+        if st.session_state.ExpertAgent_finished:
 
-                if st.button("Continuar a la evaluación de las respuestas"):
-                    switch_page("Evaluación")
+            if st.button("Continuar a la evaluación de las respuestas"):
+                switch_page("Evaluación")
 
         if st.session_state.num_branches_fusionRAG:
             st.title("Resultados del FusionRAG")
