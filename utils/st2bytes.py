@@ -5,6 +5,14 @@ from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 
 def convert2bytes(files: List[UploadedFile]):
+    """_summary_
+
+    Args:
+        files (List[UploadedFile]): _description_
+
+    Returns:
+        _type_: _description_
+    """
     to_return = []
     for file in files:
         to_return.append(file.read())

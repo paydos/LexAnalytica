@@ -28,6 +28,14 @@ def unpack_json(uploaded_file):
 
 
 def build_question_db(questions_json: list) -> List[dict]:
+    """_summary_
+
+    Args:
+        questions_json (list): JSON w/ the questions
+
+    Returns:
+        List[dict]:unpacked questions
+    """
     unpacked_questions = []  # Initialize an empty list to hold the unpacked questions
     for question in questions_json:
         # Construct the unpacked question string

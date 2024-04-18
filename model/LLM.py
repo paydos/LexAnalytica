@@ -8,6 +8,8 @@ from model import FusionRAG
 
 
 class ExpertAgent:
+    """Represents an expert agent that interacts with users and generates responses using a language model."""
+
     def __init__(
         self,
         fusion_rag: FusionRAG = None,
@@ -16,6 +18,15 @@ class ExpertAgent:
         agent_description: str = " ",
         temperature: float = 0.7,
     ) -> None:
+        """Initializes the expert agent with the given parameters.
+
+        Args:
+            fusion_rag (FusionRAG, optional): The FusionRAG model instance. Defaults to None.
+            api_key (str, optional): The API key for accessing the language model. Defaults to None.
+            model_name (str, optional): The name of the language model. Defaults to "gpt-4-turbo".
+            agent_description (str, optional): A description of the agent's personality. Defaults to " ".
+            temperature (float, optional): The temperature for generating responses. Defaults to 0.7.
+        """
         self.api_key = api_key
         self.model_name = model_name
         self.chat_history = None
@@ -25,13 +36,10 @@ class ExpertAgent:
         self.temperature = temperature
         self.fusion_rag = fusion_rag
         self.status = ""
-        # Creates an instance of the ChatOpenAI class
         self._chat_instance()
 
     def _chat_instance(self):
-        """
-        Creates an instance of ChatOpenAI and provides it with personality.
-        """
+        """Creates an instance of ChatOpenAI and initializes it with the agent's personality."""
         if not self.chat_instance:
             self.chat_instance = ChatOpenAI(
                 api_key=self.api_key,
@@ -41,6 +49,12 @@ class ExpertAgent:
             self._agent_description()
 
     def _enhanced_chat_history(self, human: HumanMessage = None, gpt: AIMessage = None):
+        """Updates the enhanced chat history with messages from the human user and the AI.
+
+        Args:
+            human (HumanMessage, optional): The message from the human user. Defaults to None.
+            gpt (AIMessage, optional): The message from the AI. Defaults to None.
+        """
         if self.enhanced_chat_history is None:
             self.enhanced_chat_history = []
 
@@ -53,7 +67,12 @@ class ExpertAgent:
             self.enhanced_chat_history.append(gpt)
 
     def _chat_history(self, human: HumanMessage = None, gpt: AIMessage = None):
+        """Updates the chat history with messages from the human user and the AI.
 
+        Args:
+            human (HumanMessage, optional): The message from the human user. Defaults to None.
+            gpt (AIMessage, optional): The message from the AI. Defaults to None.
+        """
         if self.chat_history is None:
             self.chat_history = []
         if human is not None:
@@ -65,15 +84,8 @@ class ExpertAgent:
             self.chat_history.append(gpt)
 
     def _agent_description(self):
-        """
-        Sends a message to the bot upon instantiation to give it personality.
-        Includes:
-        - Description of the bot
-        """
-
-        agent_description = f"""
-        {self.agent_description} 
-        """
+        """Sends a message to the chat instance to define the agent's personality."""
+        agent_description = f"{self.agent_description}"
 
         if self.chat_instance:
             self.chat(agent_description, rag=False, status=None)
@@ -81,6 +93,15 @@ class ExpertAgent:
             raise Exception("The chat_instance had an error")
 
     def _augment_prompt(self, status, human_msg: str):
+        """Augments the prompt with additional context from the FusionRAG model.
+
+        Args:
+            status: The current status of the operation.
+            human_msg (str): The message from the human user.
+
+        Returns:
+            str: The augmented prompt.
+        """
         documents = self.fusion_rag.fusion_rag(self.chat_instance, human_msg, status)
         documents_processed = "\n".join([x.page_content for x in documents])
 
@@ -101,7 +122,15 @@ class ExpertAgent:
         total_count=0,
         rag: bool = True,
     ):
-        # Create a human message
+        """Processes a chat message, generates a response, and updates the chat history.
+
+        Args:
+            message: The message to process.
+            status: The current status of the operation.
+            count (int, optional): The current count of processed messages. Defaults to 0.
+            total_count (int, optional): The total count of messages to process. Defaults to 0.
+            rag (bool, optional): Whether to use RAG for generating responses. Defaults to True.
+        """
         if rag:
             if hasattr(status, "update"):
                 status.update(
@@ -144,9 +173,7 @@ class ExpertAgent:
         self._controlTokenUsage()
 
     def _controlTokenUsage(self):
-        """
-        Truncate back to just the context when it hits 70k
-        """
+        """Controls the token usage by truncating the chat history when it exceeds a certain length."""
         chat_history_text = " ".join(
             [message.content for message in self.enhanced_chat_history]
         )

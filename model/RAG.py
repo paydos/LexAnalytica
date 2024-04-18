@@ -38,6 +38,18 @@ class FusionRAG(DocumentUploader):
         fusionRAG_generated_queries: List[str] = None,
         results_per_branch: int = 1,
     ) -> None:
+        """_summary_
+
+        Args:
+            pinecone_api_key (str): _description_
+            openai_api_key (str): _description_
+            index_name (str, optional): _description_. Defaults to "law-documents".
+            openai_embeddings_model (str, optional): _description_. Defaults to "text-embedding-3-large".
+            context (str, optional): _description_. Defaults to " ".
+            fusionRAG_branches (int, optional): _description_. Defaults to 1.
+            fusionRAG_generated_queries (List[str], optional): _description_. Defaults to None.
+            results_per_branch (int, optional): _description_. Defaults to 1.
+        """
         super().__init__(
             pinecone_api_key=pinecone_api_key,
             openai_api_key=openai_api_key,
@@ -74,6 +86,16 @@ class FusionRAG(DocumentUploader):
         return self.consult_vectorstore(query, self.results_per_branch)
 
     def fusion_rag(self, chat_completions: ChatOpenAI, human_msg: str, status):
+        """_summary_
+
+        Args:
+            chat_completions (ChatOpenAI): _description_
+            human_msg (str): _description_
+            status (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
 
         # Template to generate vectorstore queries
         vectorstore_fusionRAG_query = HumanMessage(
