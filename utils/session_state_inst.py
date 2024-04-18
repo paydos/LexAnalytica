@@ -42,3 +42,6 @@ def inst_states():
 
     if "ExpertAgent_finished" not in st.session_state:
         st.session_state["ExpertAgent_finished"] = False
+
+    if "raw_json" not in st.session_state:
+        st.session_state["raw_json"] = None

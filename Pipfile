@@ -21,6 +21,8 @@ matplotlib = "*"
 toml = "*"
 streamlit-extras = "0.4.2"
 streamlit-chat = "*"
+tiktoken = "*"
+nltk = "*"
 
 [dev-packages]
 ipykernel = "*"

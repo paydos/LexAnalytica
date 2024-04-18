@@ -2,6 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
 import pinecone
+import streamlit as st
 from langchain.schema import AIMessage, HumanMessage
 from langchain_core.documents.base import Document
 from langchain_openai import ChatOpenAI
@@ -72,7 +73,7 @@ class FusionRAG(DocumentUploader):
     def _consult_vectorstore_threaded(self, query: str) -> List[Document]:
         return self.consult_vectorstore(query, self.results_per_branch)
 
-    def fusion_rag(self, chat_completions: ChatOpenAI, human_msg: str):
+    def fusion_rag(self, chat_completions: ChatOpenAI, human_msg: str, status):
 
         # Template to generate vectorstore queries
         vectorstore_fusionRAG_query = HumanMessage(
@@ -91,6 +92,18 @@ class FusionRAG(DocumentUploader):
 
         # Generated queries
         self.fusionRAG_generated_queries = response_content.strip().split("\n")
+
+        if hasattr(status, "update"):
+            with status:
+                containerBranch = st.container()
+                with containerBranch:
+                    containerBranch.empty()  # Empty the previous content
+                    for query in self.fusionRAG_generated_queries:
+                        st.write(query)
+
+        print(f"{len(self.fusionRAG_generated_queries)} KNOWLEDGE BRANCHES GENERATED")
+        for branch in self.fusionRAG_generated_queries:
+            print(f"KNOWLEDGE BRANCH: {branch}")
 
         vectorstore_results = []
         query_to_results_map = {}
