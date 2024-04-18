@@ -1,3 +1,4 @@
+import nltk
 import streamlit as st
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.switch_page_button import switch_page
@@ -32,6 +33,11 @@ st.write("# Bienvenido a LexAnalytica")
 if not check_password():
 
     st.stop()  # Do not continue if check_password is not True.
+
+with st.spinner("Downloading punkt tokenizer"):
+
+    nltk.download("punkt")
+
 st.write(
     "Para usar LexAnalytica, debes tener a mano tanto el JSON de evaluación como nuestro SETTINGS.toml, el cual contiene los prompts y otros ajustes de configuración de LexAnalytica. En **Evaluar Modelo** tienes una experiencia guiada para evaluar el asistente."
 )
