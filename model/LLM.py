@@ -104,7 +104,7 @@ class ExpertAgent:
         if rag:
             if hasattr(status, "update"):
                 status.update(
-                    label=f"Generando respuesta para pregunta {count+1} de {total_count} ",
+                    label=f"Generando ramas de conocimeinto para la pregunta {count+1} de {total_count} ",
                     state="running",
                     expanded=False,
                 )
@@ -121,7 +121,7 @@ class ExpertAgent:
             self._enhanced_chat_history(message)
         if hasattr(status, "update"):
             status.update(
-                label=f"Generando respuesta para la pregunta {count+1}",
+                label=f"Generando respuesta para la pregunta {count+1} de {total_count}",
                 state="running",
                 expanded=False,
             )
