@@ -1,6 +1,8 @@
+import time
+
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
-import time
+
 from model.LLM import ExpertAgent
 from model.RAG import FusionRAG
 from utils.evaluation import unpack_json
@@ -82,7 +84,7 @@ if not st.session_state.ExpertAgent_finished:
             load_config(config_string)
             st.session_state["config_loaded"] = True
 
-        if st.button("Iniciar testing del Agente Experto"):
+        if st.button("Generar un asistente LexAnalytica"):
             try:
                 with st.spinner("Creando Agente"):
                     st.session_state.FusionRAG = FusionRAG(

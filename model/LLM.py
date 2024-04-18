@@ -2,6 +2,7 @@ from typing import List
 
 from langchain.schema import AIMessage, HumanMessage
 from langchain_openai import ChatOpenAI
+from nltk import word_tokenize
 
 from model import FusionRAG
 
@@ -11,7 +12,7 @@ class ExpertAgent:
         self,
         fusion_rag: FusionRAG = None,
         api_key: str = None,
-        model_name: str = "gpt-4-turbo-preview",
+        model_name: str = "gpt-4-turbo",
         agent_description: str = " ",
         temperature: float = 0.7,
     ) -> None:
@@ -77,10 +78,10 @@ class ExpertAgent:
         if self.chat_instance:
             self.chat(agent_description, rag=False, status=None)
         else:
-            raise "The chat_instance had an error"
+            raise Exception("The chat_instance had an error")
 
-    def _augment_prompt(self, human_msg: str):
-        documents = self.fusion_rag.fusion_rag(self.chat_instance, human_msg)
+    def _augment_prompt(self, status, human_msg: str):
+        documents = self.fusion_rag.fusion_rag(self.chat_instance, human_msg, status)
         documents_processed = "\n".join([x.page_content for x in documents])
 
         augmented_prompt = f"""
@@ -104,11 +105,11 @@ class ExpertAgent:
         if rag:
             if hasattr(status, "update"):
                 status.update(
-                    label=f"Generando respuesta para pregunta {count+1} de {total_count} ",
+                    label=f"Generando ramas de conocimiento para la pregunta {count+1} de {total_count} ",
                     state="running",
-                    expanded=False,
+                    expanded=True,
                 )
-            augmented_message = self._augment_prompt(message)
+            augmented_message = self._augment_prompt(status=status, human_msg=message)
             augmented_message = HumanMessage(content=augmented_message)
 
             message = HumanMessage(content=message)
@@ -121,10 +122,11 @@ class ExpertAgent:
             self._enhanced_chat_history(message)
         if hasattr(status, "update"):
             status.update(
-                label=f"Generando respuesta para la pregunta {count+1}",
+                label=f"Generando respuesta para la pregunta {count+1} de {total_count}",
                 state="running",
                 expanded=False,
             )
+
         ai_message_content = self.chat_instance.invoke(self.enhanced_chat_history)
         ai_message = AIMessage(content=ai_message_content.content)
 
@@ -134,8 +136,34 @@ class ExpertAgent:
                 status.update(
                     label="Respuesta generada",
                     state="complete",
-                    expanded=False,
+                    expanded=True,
                 )
 
         self._chat_history(ai_message)
         self._enhanced_chat_history(ai_message)
+        self._controlTokenUsage()
+
+    def _controlTokenUsage(self):
+        """
+        Truncate back to just the context when it hits 70k
+        """
+        chat_history_text = " ".join(
+            [message.content for message in self.enhanced_chat_history]
+        )
+        tokens = len(word_tokenize(text=chat_history_text, language="spanish"))
+        print(f"WINDOW LENGTH: {(tokens)}")
+        if tokens > 70000:
+            print(f"LENGTH EXCEEDED. TOTAL LENGTH: {tokens}")
+            self.enhanced_chat_history = []
+            self.enhanced_chat_history.append(
+                HumanMessage(content=self.agent_description)
+            )
+            self.enhanced_chat_history.append(AIMessage(content=" "))
+
+            new_chat_history_text = " ".join(
+                [message.content for message in self.enhanced_chat_history]
+            )
+
+            print(
+                f"LENGTH RESET. NEW LENGTH: {len(word_tokenize(text=new_chat_history_text, language='spanish'))}"
+            )

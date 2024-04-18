@@ -84,7 +84,15 @@ with R:
     - **Framework de Desarrollo:** LangChain 🦜
     """
         )
-
+    with st.expander("Posibles mejoras & future work"):
+        st.markdown(
+            """Debido a la falta de tiempo, no hemos podido avanzar con ciertas ramas de innovación para mejorar el modelo.
+                    - Integración full-stack FusionRAG, añadiendo la API de Tavily para poder enriquecer de manera adecuada las respuestas.
+                    - Mejora del RRF Reranking para añadir más valor a los chunks obtenidos de nuestro Vector Store.
+                    - Acceso a un budget para poder mejorar los embeddings, y sobretodo, latencias.
+                    
+                    """
+        )
     st.subheader("Backend")
     st.write(
         """

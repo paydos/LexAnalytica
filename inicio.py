@@ -27,6 +27,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 st.write("# Bienvenido a LexAnalytica")
+st.write(
+    "Para usar LexAnalytica, debes tener a mano tanto el JSON de evaluación como nuestro SETTINGS.toml, el cual contiene los prompts y otros ajustes de configuración de LexAnalytica. En **Evaluar Modelo** tienes una experiencia guiada para evaluar el asistente."
+)
 
 if not check_password():
 
@@ -45,21 +48,24 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.subheader("Evaluar 📊")
     st.write("Para la evaluación de LexAnalytica en el Hackathon.")
-    if col1.button("Evaluar modelo 📊", key="eval_model", use_container_width=True):
+    if col1.button(
+        "Evaluar modelo 📊",
+        key="eval_model",
+    ):
         switch_page("Evaluación")
 
 with col2:
     st.subheader("Configuración ⚙️")
     st.write("Configura a LexAnalytica a medida.")
-    if col2.button("Configuración ⚙️", key="config", use_container_width=True):
+    if col2.button(
+        "Configuración ⚙️",
+        key="config",
+    ):
         switch_page("Configuración")
 
 with col3:
     st.subheader("Chatear 💬")
-    st.write(
-        "Interactúa directamente con nuestro agente inteligente.",
-        use_container_width=True,
-    )
+    st.write("Interactúa directamente con nuestro agente inteligente.")
     if col3.button("Chatear con el Agente 💬", key="chat"):
         switch_page("Chatear con el Agente")
 
@@ -72,14 +78,16 @@ with col4:
         "Subir documentos 📤",
         key="upload_docs",
         disabled=True,
-        use_container_width=True,
     ):
         switch_page("Subir Documentos")
 
 with col5:
     st.subheader("About 📘")
     st.write("Conoce más sobre nosotros y el proyecto.")
-    if col5.button("About 📘", key="about", use_container_width=True):
+    if col5.button(
+        "About 📘",
+        key="about",
+    ):
         switch_page("About")
 
 show_creator_acknowledgement()
