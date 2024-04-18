@@ -2,6 +2,7 @@ import time
 from time import sleep
 
 import streamlit as st
+from nltk import word_tokenize
 from streamlit_chat import message as st_message
 from streamlit_extras.switch_page_button import switch_page
 
@@ -123,7 +124,10 @@ if st.session_state.examMode == False:
 else:  # In examMode == True
     if isinstance(st.session_state.ExpertAgent, ExpertAgent):
         statusBar = st.status(label="Preguntas")
-        if st.session_state.unpackedQuestions:
+        if (
+            st.session_state.unpackedQuestions
+            and not st.session_state.ExpertAgent_finished
+        ):
             for i, question in enumerate(st.session_state.unpackedQuestions):
 
                 st.session_state.ExpertAgent.chat(
@@ -158,5 +162,7 @@ else:  # In examMode == True
                     )
     else:
         st.warning(
-            "No has creado el Agente Experto. Ve a **configuración** o **evaluación**."
+            "Si has pulsado en Continuar a la evaluación de las respuestas, vuelve a hacer click en el botón. Si no es el caso, no has creado el Agente Experto. Ve a **configuración** o **evaluación**."
         )
+        if st.button("Continuar a la evaluación de las respuestas"):
+            switch_page("Evaluación")
