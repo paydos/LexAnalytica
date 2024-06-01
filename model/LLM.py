@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional, Any
 
 from langchain.schema import AIMessage, HumanMessage
 from langchain_openai import ChatOpenAI
@@ -10,15 +10,42 @@ from model import FusionRAG
 class ExpertAgent:
     """Represents an expert agent that interacts with users and generates responses using a language model."""
 
+    api_key: str
+    """The API key for accessing the language model."""
+
+    model_name: str
+    """The name of the language model."""
+
+    chat_history: List[HumanMessage]
+    """The history of chat messages from the human user."""
+
+    enhanced_chat_history: List[HumanMessage]
+    """The enhanced history of chat messages including additional context."""
+
+    chat_instance: ChatOpenAI
+    """The instance of the ChatOpenAI model."""
+
+    agent_description: str
+    """A description of the agent's personality."""
+
+    temperature: float
+    """The temperature for generating responses."""
+
+    fusion_rag: FusionRAG
+    """The FusionRAG model instance."""
+
+    status: str
+    """The current status of the agent."""
+
     def __init__(
         self,
-        fusion_rag: FusionRAG = None,
-        api_key: str = None,
-        model_name: str = "gpt-4-turbo",
+        fusion_rag: Optional[FusionRAG] = None,
+        api_key: Optional[str] = None,
+        model_name: str = "----",
         agent_description: str = " ",
         temperature: float = 0.7,
     ) -> None:
-        """Initializes the expert agent with the given parameters.
+        """Initialises the expert agent with the given parameters.
 
         Args:
             fusion_rag (FusionRAG, optional): The FusionRAG model instance. Defaults to None.
@@ -38,7 +65,7 @@ class ExpertAgent:
         self.status = ""
         self._chat_instance()
 
-    def _chat_instance(self):
+    def _chat_instance(self) -> None:
         """Creates an instance of ChatOpenAI and initializes it with the agent's personality."""
         if not self.chat_instance:
             self.chat_instance = ChatOpenAI(
@@ -48,25 +75,29 @@ class ExpertAgent:
             )
             self._agent_description()
 
-    def _enhanced_chat_history(self, human: HumanMessage = None, gpt: AIMessage = None):
+    def _enhanced_chat_history(
+        self, human: Optional[HumanMessage] = None, gpt: Optional[AIMessage] = None
+    ) -> None:
         """Updates the enhanced chat history with messages from the human user and the AI.
 
         Args:
             human (HumanMessage, optional): The message from the human user. Defaults to None.
             gpt (AIMessage, optional): The message from the AI. Defaults to None.
         """
-        if self.enhanced_chat_history is None:
+        if not self.enhanced_chat_history:
             self.enhanced_chat_history = []
 
-        if human is not None:
+        if human:
             if human.content == "exit":
                 exit("User exited the chat")
             self.enhanced_chat_history.append(human)
 
-        if gpt is not None:
+        if gpt:
             self.enhanced_chat_history.append(gpt)
 
-    def _chat_history(self, human: HumanMessage = None, gpt: AIMessage = None):
+    def _chat_history(
+        self, human: Optional[HumanMessage] = None, gpt: Optional[AIMessage] = None
+    ) -> None:
         """Updates the chat history with messages from the human user and the AI.
 
         Args:
@@ -83,7 +114,7 @@ class ExpertAgent:
         if gpt is not None:
             self.chat_history.append(gpt)
 
-    def _agent_description(self):
+    def _agent_description(self) -> None:
         """Sends a message to the chat instance to define the agent's personality."""
         agent_description = f"{self.agent_description}"
 
@@ -92,7 +123,7 @@ class ExpertAgent:
         else:
             raise Exception("The chat_instance had an error")
 
-    def _augment_prompt(self, status, human_msg: str):
+    def _augment_prompt(self, status: Any, human_msg: str) -> str:
         """Augments the prompt with additional context from the FusionRAG model.
 
         Args:
@@ -116,12 +147,12 @@ class ExpertAgent:
 
     def chat(
         self,
-        message,
-        status,
-        count=0,
-        total_count=0,
+        message: str,
+        status: Any,
+        count: int = 0,
+        total_count: int = 0,
         rag: bool = True,
-    ):
+    ) -> None:
         """Processes a chat message, generates a response, and updates the chat history.
 
         Args:
@@ -172,7 +203,7 @@ class ExpertAgent:
         self._enhanced_chat_history(ai_message)
         self._controlTokenUsage()
 
-    def _controlTokenUsage(self):
+    def _controlTokenUsage(self) -> None:
         """Controls the token usage by truncating the chat history when it exceeds a certain length."""
         chat_history_text = " ".join(
             [message.content for message in self.enhanced_chat_history]

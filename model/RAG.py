@@ -1,5 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
-from typing import List
+from typing import List, Optional, Any
 
 import pinecone
 import streamlit as st
@@ -18,14 +18,40 @@ class FusionRAG(DocumentUploader):
     The class initializes with API keys for Pinecone and OpenAI, an index name for the
     Pinecone vector store, and the name of the OpenAI embeddings model to use. It then
     loads the Pinecone index and creates an instance of the embeddings model.
-
-    Attributes:
-        - pinecone_api_key (str): The API key for Pinecone.
-        - openai_api_key (str): The API key for OpenAI.
-        - index_name (str): The name of the Pinecone index to use. Defaults to "law-documents".
-        - openai_embeddings_model (str): The name of the OpenAI embeddings model to use.
-                                       Defaults to "text-embedding-3-large".
     """
+
+    pinecone_api_key: str
+    """The API key for Pinecone."""
+
+    openai_api_key: str
+    """The API key for OpenAI."""
+
+    index_name: str
+    """The name of the Pinecone index to use. Defaults to 'law-documents'."""
+
+    openai_embeddings_model: str
+    """The name of the OpenAI embeddings model to use. Defaults to 'text-embedding-3-large'."""
+
+    context: str
+    """The context for the FusionRAG. Defaults to ' '."""
+
+    fusionRAG_branches: int
+    """The number of FusionRAG branches to create. Defaults to 1."""
+
+    fusionRAG_generated_queries: Optional[List[str]]
+    """The list of generated queries for FusionRAG. Defaults to None."""
+
+    results_per_branch: int
+    """The number of results per branch. Defaults to 1."""
+
+    vector_store: Optional[Pinecone]
+    """The vector store instance."""
+
+    fusionRAGcontext: str
+    """The context for FusionRAG queries."""
+
+    fusionRAG_query_to_results_map: Optional[dict]
+    """The map of queries to results."""
 
     def __init__(
         self,
@@ -35,20 +61,20 @@ class FusionRAG(DocumentUploader):
         openai_embeddings_model: str = "text-embedding-3-large",
         context: str = " ",
         fusionRAG_branches: int = 1,
-        fusionRAG_generated_queries: List[str] = None,
+        fusionRAG_generated_queries: Optional[List[str]] = None,
         results_per_branch: int = 1,
     ) -> None:
-        """_summary_
+        """Initializes the FusionRAG class with the given parameters.
 
         Args:
-            pinecone_api_key (str): _description_
-            openai_api_key (str): _description_
-            index_name (str, optional): _description_. Defaults to "law-documents".
-            openai_embeddings_model (str, optional): _description_. Defaults to "text-embedding-3-large".
-            context (str, optional): _description_. Defaults to " ".
-            fusionRAG_branches (int, optional): _description_. Defaults to 1.
-            fusionRAG_generated_queries (List[str], optional): _description_. Defaults to None.
-            results_per_branch (int, optional): _description_. Defaults to 1.
+            pinecone_api_key (str): The API key for Pinecone.
+            openai_api_key (str): The API key for OpenAI.
+            index_name (str, optional): The name of the Pinecone index to use. Defaults to "law-documents".
+            openai_embeddings_model (str, optional): The name of the OpenAI embeddings model to use. Defaults to "text-embedding-3-large".
+            context (str, optional): The context for FusionRAG. Defaults to " ".
+            fusionRAG_branches (int, optional): The number of FusionRAG branches to create. Defaults to 1.
+            fusionRAG_generated_queries (List[str], optional): The list of generated queries for FusionRAG. Defaults to None.
+            results_per_branch (int, optional): The number of results per branch. Defaults to 1.
         """
         super().__init__(
             pinecone_api_key=pinecone_api_key,
@@ -68,7 +94,7 @@ class FusionRAG(DocumentUploader):
         self._create_embeddings_model()
         self._vectorstore_instances()
 
-    def _vectorstore_instances(self):
+    def _vectorstore_instances(self) -> None:
         """
         Loads Pinecone instances (Pinecone from langchain.vectorstores)
         - Creates Pinecone instance
@@ -85,16 +111,18 @@ class FusionRAG(DocumentUploader):
     def _consult_vectorstore_threaded(self, query: str) -> List[Document]:
         return self.consult_vectorstore(query, self.results_per_branch)
 
-    def fusion_rag(self, chat_completions: ChatOpenAI, human_msg: str, status):
-        """_summary_
+    def fusion_rag(
+        self, chat_completions: ChatOpenAI, human_msg: str, status: Any
+    ) -> List[Document]:
+        """Generates FusionRAG queries and consults the vector store.
 
         Args:
-            chat_completions (ChatOpenAI): _description_
-            human_msg (str): _description_
-            status (_type_): _description_
+            chat_completions (ChatOpenAI): The ChatOpenAI instance for generating queries.
+            human_msg (str): The human message to generate queries for.
+            status (Any): The status object for updating the UI.
 
         Returns:
-            _type_: _description_
+            List[Document]: The list of documents retrieved from the vector store.
         """
 
         # Template to generate vectorstore queries
@@ -147,7 +175,13 @@ class FusionRAG(DocumentUploader):
     def consult_vectorstore(self, query: str, how_many: int = 3) -> List[Document]:
         """
         Consults the VectorStore for a given string query.
-        - Returns a list
+
+        Args:
+            query (str): The query string to search for.
+            how_many (int, optional): The number of results to return. Defaults to 3.
+
+        Returns:
+            List[Document]: The list of documents retrieved from the vector store.
         """
         results = self.vector_store.similarity_search(query, k=how_many)
         return results

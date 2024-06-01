@@ -1,17 +1,19 @@
 import json
-from typing import List
+from typing import List, Optional
 
 import streamlit as st
 
 
-def unpack_json(uploaded_file):
+def unpack_json(
+    uploaded_file: Optional[st.uploaded_file_manager.UploadedFile],
+) -> List[dict]:
     """Unpack elements from an uploaded json file.
 
     Args:
-        uploaded_file: The uploaded file object.
+        uploaded_file (Optional[st.uploaded_file_manager.UploadedFile]): The uploaded file object.
 
     Returns:
-        A list of dictionaries, each containing the unpacked elements of a question from the json file.
+        List[dict]: A list of dictionaries, each containing the unpacked elements of a question from the json file.
     """
     unpacked_questions = []  # Initialize an empty list to hold the unpacked questions
     # Ensure there is a file to process
@@ -27,14 +29,14 @@ def unpack_json(uploaded_file):
     return unpacked_questions
 
 
-def build_question_db(questions_json: list) -> List[dict]:
-    """_summary_
+def build_question_db(questions_json: List[dict]) -> List[dict]:
+    """Build a database of questions from JSON data.
 
     Args:
-        questions_json (list): JSON w/ the questions
+        questions_json (List[dict]): JSON with the questions.
 
     Returns:
-        List[dict]:unpacked questions
+        List[dict]: Unpacked questions.
     """
     unpacked_questions = []  # Initialize an empty list to hold the unpacked questions
     for question in questions_json:

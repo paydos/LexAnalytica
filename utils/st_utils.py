@@ -1,45 +1,45 @@
 import re
-
 import streamlit as st
 import toml
-
 from model import ExpertAgent
 
 if "ExpertAgent" not in st.session_state:
     st.session_state["ExpertAgent"] = None
 
+def load_config(config_file: str) -> None:
+    """
+    Load configuration from a TOML file and set up the session state.
 
-# Set up Session State
-def load_config(config_file):
+    Args:
+        config_file (str): The path to the configuration file.
+    """
     config = toml.loads(config_file)
     st.session_state["ExpertAgentInstructions"] = config["ExpertAgent"]["description"]
-    st.session_state["ExpertAgentTemperature"] = float(
-        config["ExpertAgent"]["temperature"]
-    )
+    st.session_state["ExpertAgentTemperature"] = float(config["ExpertAgent"]["temperature"])
     st.session_state["num_branches_fusionRAG"] = config["FusionRAG"]["num_branches"]
-    st.session_state["num_matches_per_branch"] = config["FusionRAG"][
-        "num_matches_per_branch"
-    ]
+    st.session_state["num_matches_per_branch"] = config["FusionRAG"]["num_matches_per_branch"]
     st.session_state["context_fusionRAG"] = config["FusionRAG"]["context"]
 
+def display_fusionRAG_docs(fusionRAG_query_to_results_map: dict) -> None:
+    """
+    Display documents related to FusionRAG queries.
 
-def display_fusionRAG_docs(fusionRAG_query_to_results_map):
+    Args:
+        fusionRAG_query_to_results_map (dict): A dictionary mapping queries to their results.
+    """
     for query, chunks in fusionRAG_query_to_results_map.items():
         st.subheader(f"Consulta: {query}")
         for i, chunk in enumerate(chunks):
-            with st.expander(
-                label=f"Fuente {i+1} de {len(chunks)}: {chunk.metadata['source']}"
-            ):
+            with st.expander(label=f"Fuente {i+1} de {len(chunks)}: {chunk.metadata['source']}"):
                 st.markdown(chunk.page_content)
 
-
-def display_results(ExpertAgentInstance: ExpertAgent):
+def display_results(ExpertAgentInstance: ExpertAgent) -> None:
     """
-    Unpack from ExpertAgent's object
+    Unpack and display results from the ExpertAgent's object.
 
-    When unpacking the questions, [0,1] are not unpacked as they correspond to context + useless response
+    Args:
+        ExpertAgentInstance (ExpertAgent): An instance of the ExpertAgent class.
     """
-
     import json
 
     if hasattr(ExpertAgentInstance, "chat_history"):
@@ -48,35 +48,27 @@ def display_results(ExpertAgentInstance: ExpertAgent):
             question = ExpertAgentInstance.chat_history[i]
             answer = ExpertAgentInstance.chat_history[i + 1]
             try:
-                chat_history_json.append(
-                    {
-                        "pregunta": question.content,
-                        "respuesta": (
-                            re.search(r'"([A-Z])"|([A-Z])\)', answer.content).group(1)
-                            if re.search(r'"([A-Z])"', answer.content)
-                            else (
-                                re.search(r"([A-Z])\)", answer.content).group(1)
-                                if re.search(r"([A-Z])\)", answer.content)
-                                else "Ha habido un error parseando. La respuesta estará en la justificación"
-                            )
-                        ),
-                        "justificacion": answer.content,
-                    }
-                )
+                chat_history_json.append({
+                    "pregunta": question.content,
+                    "respuesta": (
+                        re.search(r'"([A-Z])"|([A-Z])\)', answer.content).group(1)
+                        if re.search(r'"([A-Z])"', answer.content)
+                        else (
+                            re.search(r"([A-Z])\)", answer.content).group(1)
+                            if re.search(r"([A-Z])\)", answer.content)
+                            else "Ha habido un error parseando. La respuesta estará en la justificación"
+                        )
+                    ),
+                    "justificacion": answer.content,
+                })
             except:
-                chat_history_json.append(
-                    {
-                        "pregunta": question.content,
-                        "respuesta": "Se ha parseado mal, mira en la justificación",
-                        "justificacion": answer.content,
-                    }
-                )
+                chat_history_json.append({
+                    "pregunta": question.content,
+                    "respuesta": "Se ha parseado mal, mira en la justificación",
+                    "justificacion": answer.content,
+                })
 
-    for i, exam_question in enumerate(
-        json.loads(st.session_state["examination_json"].getvalue().decode("utf-8"))[
-            "preguntas"
-        ]
-    ):
+    for i, exam_question in enumerate(json.loads(st.session_state["examination_json"].getvalue().decode("utf-8"))["preguntas"]):
         question = ExpertAgentInstance.chat_history[i * 2 + 2]
         answer = ExpertAgentInstance.chat_history[i * 2 + 3]
         correct_answer = exam_question["respuesta_correcta"]
@@ -102,45 +94,43 @@ def display_results(ExpertAgentInstance: ExpertAgent):
             st.markdown(f"Respuesta correcta: **{correct_answer}**")
     if st.download_button(
         label="Descargar respuestas",
-        data=json.dumps(chat_history_json, ensure_ascii=False, indent=4).encode(
-            "utf-8"
-        ),
+        data=json.dumps(chat_history_json, ensure_ascii=False, indent=4).encode("utf-8"),
         file_name="RESPUESTAS.json",
         mime="application/json",
     ):
         st.success("Historial de chat descargado con éxito.")
 
-
 import re
-
 import streamlit as st
 import toml
-
 from model import ExpertAgent
 
 if "ExpertAgent" not in st.session_state:
     st.session_state["ExpertAgent"] = None
 
+def load_config(config_file: str) -> None:
+    """
+    Load configuration from a TOML file and set up the session state.
 
-# Set up Session State
-def load_config(config_file):
+    Args:
+        config_file (str): The path to the configuration file.
+    """
     config = toml.loads(config_file)
     st.session_state["ExpertAgentInstructions"] = config["ExpertAgent"]["description"]
-    st.session_state["ExpertAgentTemperature"] = float(
-        config["ExpertAgent"]["temperature"]
-    )
+    st.session_state["ExpertAgentTemperature"] = float(config["ExpertAgent"]["temperature"])
     st.session_state["num_branches_fusionRAG"] = config["FusionRAG"]["num_branches"]
-    st.session_state["num_matches_per_branch"] = config["FusionRAG"][
-        "num_matches_per_branch"
-    ]
+    st.session_state["num_matches_per_branch"] = config["FusionRAG"]["num_matches_per_branch"]
     st.session_state["context_fusionRAG"] = config["FusionRAG"]["context"]
 
+def display_fusionRAG_docs(fusionRAG_query_to_results_map: dict) -> None:
+    """
+    Display documents related to FusionRAG queries.
 
-def display_fusionRAG_docs(fusionRAG_query_to_results_map):
+    Args:
+        fusionRAG_query_to_results_map (dict): A dictionary mapping queries to their results.
+    """
     for query, chunks in fusionRAG_query_to_results_map.items():
         st.subheader(f"Consulta: {query}")
         for i, chunk in enumerate(chunks):
-            with st.expander(
-                label=f"Fuente {i+1} de {len(chunks)}: {chunk.metadata['source']}"
-            ):
+            with st.expander(label=f"Fuente {i+1} de {len(chunks)}: {chunk.metadata['source']}"):
                 st.markdown(chunk.page_content)

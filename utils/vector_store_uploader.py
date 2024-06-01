@@ -1,4 +1,5 @@
 import time
+from typing import List, Optional
 
 from langchain_openai import OpenAIEmbeddings
 from pinecone import Pinecone, PodSpec
@@ -8,6 +9,33 @@ from utils.pdf2txt import convert_to_text
 
 
 class DocumentUploader:
+    pinecone_api_key: str
+    """The API key for Pinecone."""
+
+    openai_api_key: str
+    """The API key for OpenAI."""
+
+    openai_embeddings_model: str
+    """The name of the OpenAI embeddings model to use."""
+
+    index_name: str
+    """The name of the Pinecone index to use."""
+
+    text_field: str
+    """The field name for the text in the documents."""
+
+    Index: Optional[Pinecone.Index]
+    """The Pinecone index instance."""
+
+    Pinecone: Optional[Pinecone]
+    """The Pinecone instance."""
+
+    embeddings_model: Optional[OpenAIEmbeddings]
+    """The OpenAI embeddings model instance."""
+
+    chunked_text: Optional[List[dict]]
+    """Contains a list of documents with each document having two keys: 'text' and 'source'."""
+
     def __init__(
         self,
         pinecone_api_key: str,
@@ -28,12 +56,11 @@ class DocumentUploader:
         self.embeddings_model = None
 
         self.chunked_text = None
-        """Contains a List of documents with each document having two keys: 'text' and 'source'"""
 
         self._load_index()
         self._create_embeddings_model()
 
-    def _create_embeddings_model(self):
+    def _create_embeddings_model(self) -> None:
         """
         Creates an instance of OpenAIEmbeddings
         """
@@ -41,20 +68,20 @@ class DocumentUploader:
             api_key=self.openai_api_key, model=self.openai_embeddings_model
         )
 
-    def _load_index(self):
+    def _load_index(self) -> None:
         """
         Creates a Pinecone index or loads it if it exists.
         """
         self.Pinecone = Pinecone(api_key=self.pinecone_api_key)
         self.Index = self.Pinecone.Index(self.index_name)
 
-    def _process_pdf(self, files):
+    def _process_pdf(self, files: List[str]) -> None:
         self.chunked_text = convert_to_text(files)
 
-    def _check_document_exists(self):
+    def _check_document_exists(self) -> None:
         pass
 
-    def upload_documents(self, files, batch_size: int = 100):
+    def upload_documents(self, files: List[str], batch_size: int = 100) -> None:
         """
         Uploads documents to Pinecone in batches.
         """

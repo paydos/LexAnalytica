@@ -5,18 +5,18 @@ def create_configfile(
     num_matches_per_branch: int,
     num_branches_fusionRAG: int,
 ) -> str:
-    """_summary_
+    """Creates a configuration file content.
 
     Args:
-        agent_description (str): _description_
-        agent_temperature (float): _description_
-        fusionRAG_context (str): _description_
-        num_matches_per_branch (int): _description_
-        num_branches_fusionRAG (int): _description_
+        agent_description (str): Description of the agent.
+        agent_temperature (float): Temperature setting for the agent.
+        fusionRAG_context (str): Context for FusionRAG.
+        num_matches_per_branch (int): Number of matches per branch.
+        num_branches_fusionRAG (int): Number of branches for FusionRAG.
 
     Returns:
-        str: _description_
-    """ """"""
+        str: The content of the configuration file.
+    """
     config_content = f"""
     [ExpertAgent]
 description = \"\"\"{agent_description}\"\"\"

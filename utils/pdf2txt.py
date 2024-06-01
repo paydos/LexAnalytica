@@ -1,17 +1,26 @@
 import binascii
 import io
 from typing import List
+from tqdm import tqdm
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from pypdf import PdfReader
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 
-def convert_to_text(pdf_list: List[UploadedFile]) -> str:
+def convert_to_text(pdf_list: List[UploadedFile]) -> List[dict]:
+    """
+    Converts a list of uploaded PDF files to a list of text chunks with their sources.
+
+    Args:
+        pdf_list (List[UploadedFile]): A list of uploaded PDF files.
+
+    Returns:
+        List[dict]: A list of dictionaries, each containing 'text' and 'source' keys.
+    """
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000, chunk_overlap=100, length_function=len
     )
-    from tqdm import tqdm
 
     docs = []
     for doc in tqdm(pdf_list, desc="Converting PDFs to text"):

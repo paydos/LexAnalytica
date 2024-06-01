@@ -5,7 +5,7 @@ import streamlit as st
 
 def check_password():
     """Returns `True` if the user had the correct password."""
-    return True
+    return True  # For demo
 
     def password_entered():
         """Checks whether a password entered by the user is correct."""
