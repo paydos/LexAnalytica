@@ -2,7 +2,7 @@
 
 ## Como ejecutar el código
 
-Para acceder a LexAnalytica, puedes entrar en la página web del MVP: [_LexAnalytica_](legaltech-expertagent.streamlit.app)
+Para acceder a LexAnalytica, puedes entrar en la página web del MVP: [_LexAnalytica_](http://legaltech-expertagent.streamlit.app)
 
 En el menú de inicio, encontrarás varias secciones.
 ![Menu Principal](images/image.png)
